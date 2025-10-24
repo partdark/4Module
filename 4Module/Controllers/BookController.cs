@@ -1,5 +1,7 @@
 using _4Module.DTO;
+
 using _4Module.Models;
+using _4Module.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -16,13 +18,16 @@ namespace _4Module.Controllers
     public class BookController : ControllerBase
     {
         private readonly MySettings _settings;
-        private static readonly LinkedList<Book> _books = new();
+
+        private readonly IBookService _bookService;
+        private readonly IAuthorService _authorService;
 
 
-
-        public BookController(IOptions<MySettings> setting)
+        public BookController(IOptions<MySettings> setting, IBookService bookService, IAuthorService authorService)
         {
             _settings = setting.Value;
+            _bookService = bookService;
+            _authorService = authorService;
         }
 
 
@@ -46,10 +51,11 @@ namespace _4Module.Controllers
         /// </summary>
         /// <returns>All books</returns>
         /// <response code ="200">Succes</response>
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<BookResponseDTO>>> Get()
+        [HttpGet("books")]
+        public async Task<ActionResult<IEnumerable<BookResponseDTO>>> GetAllBooksAsync()
         {
-            return Ok();
+            var books = await _bookService.GetAllAsync();
+            return Ok(books);
         }
 
 
@@ -60,11 +66,12 @@ namespace _4Module.Controllers
         /// <returns>Return book with your id</returns>
         /// <response code ="200">Succes</response>
         /// /// <response code ="404">Book with your id not found</response>
-        [HttpGet("{id:guid}")]
+        [HttpGet("books/{id:guid}")]
 
-        public async Task<ActionResult<BookResponseDTO>> GetbyId([FromRoute] Guid id)
+        public async Task<ActionResult<BookResponseDTO>> GetBookbyId([FromRoute] Guid id)
         {
-            return Ok();
+            var book = await _bookService.GetByIdAsync(id);
+            return Ok(book);
         }
 
         /// <summary>
@@ -73,10 +80,11 @@ namespace _4Module.Controllers
         /// <param name="newBook">DTO</param>
         /// <returns>Created book</returns>
         /// <response code ="400">Data not valid</response>
-        [HttpPost]
+        [HttpPost("books")]
         public async Task<ActionResult<BookResponseDTO>> CreateBook([FromBody] CreateBookDTO newBook)
         {
-            return Ok();
+            var book = await _bookService.CreateAsync(newBook);
+            return Ok(book);
         }
 
 
@@ -84,10 +92,11 @@ namespace _4Module.Controllers
         /// Update book with your Id
         /// </summary>
         /// <param name="book">New Data</param>
-        [HttpPut("id:guid")]
+        [HttpPut("books")]
         public async Task<IActionResult> Update([FromBody] UpdateBookDTO book)
         {
-            return  Ok(book);   
+            var UpdatedBook = await _bookService.UpdateAsync(book);
+            return Ok(UpdatedBook);
 
         }
 
@@ -95,9 +104,10 @@ namespace _4Module.Controllers
         /// Delete book by id
         /// </summary>
         /// <param name="id">Book Id for delete</param>
-        [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> DeleteById([FromRoute] Guid id)
+        [HttpDelete("books/{id:guid}")]
+        public async Task<IActionResult> DeleteBookById([FromRoute] Guid id)
         {
+            await _bookService.DeleteAsync(id);
             return Ok();
 
 
@@ -114,7 +124,65 @@ namespace _4Module.Controllers
 
             throw new InvalidOperationException();
         }
+        [HttpGet("authors")]
+        public async Task<ActionResult<IEnumerable<AuthorResponseDTO>>> GetAuthors()
+        {
+            var authors = await _authorService.GetAllAsync();
+            return Ok(authors);
+        }
 
 
+        [HttpGet("authors/{id:guid}")]
+        public async Task<ActionResult<AuthorResponseDTO>> GetAuthor(Guid id)
+        {
+            var author = await _authorService.GetByIdAsync(id);
+            if (author == null)
+                return NotFound($"Автор с ID {id} не найден");
+
+            return Ok(author);
+        }
+
+
+        [HttpPost("authors")]
+        public async Task<ActionResult<AuthorResponseDTO>> CreateAuthor(CreateAuthorDTO authorDto)
+        {
+            try
+            {
+                var createdAuthor = await _authorService.CreateAsync(authorDto);
+                return CreatedAtAction(nameof(GetAuthor), new { id = createdAuthor.Id }, createdAuthor);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Ошибка при создании автора: {ex.Message}");
+            }
+        }
+
+
+        [HttpPut("authors/{id:guid}")]
+        public async Task<IActionResult> UpdateAuthor([FromRoute] Guid id,[FromBody] UpdateAuthorDTO authorDto)
+        {
+            if (id != authorDto.Id)
+                return BadRequest("ID в пути и в теле запроса не совпадают");
+
+            var updatedAuthor = await _authorService.UpdateAsync(authorDto);
+            if (updatedAuthor == null)
+                return NotFound($"Автор с ID {id} не найден");
+
+            return NoContent();
+        }
+
+
+        [HttpDelete("authors/{id:guid}")]
+        public async Task<IActionResult> DeleteAuthor([FromRoute] Guid id)
+        {
+            var result = await _authorService.DeleteAsync(id);
+            if (!result)
+                return BadRequest("Нельзя удалить автора, у которого есть книги");
+
+            return NoContent();
+        }
+
+                
     }
 }
+

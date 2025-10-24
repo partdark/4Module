@@ -1,0 +1,13 @@
+﻿using _4Module.DTO;
+
+namespace _4Module.Services
+{
+    public interface IAuthorService
+    {
+        Task<AuthorResponseDTO> CreateAsync(CreateAuthorDTO authorDto);
+        Task<bool> DeleteAsync(Guid id);
+        Task<IEnumerable<AuthorResponseDTO>> GetAllAsync();
+        Task<AuthorResponseDTO?> GetByIdAsync(Guid id);
+        Task<AuthorResponseDTO?> UpdateAsync(UpdateAuthorDTO authorDto);
+    }
+}

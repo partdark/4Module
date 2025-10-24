@@ -2,6 +2,7 @@
 using _4Module;
 using _4Module.Data;
 using _4Module.DTO;
+using _4Module.Services;
 using _4Module.Validator;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -53,6 +54,8 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddScoped<IValidator<CreateBookDTO>, CreateBookDTOValidator>();
+builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IAuthorService, AuthorService>();
 
 
 var app = builder.Build();

@@ -8,16 +8,16 @@ namespace _4Module.Validator
     {
         public CreateBookDTOValidator()
         {
-            RuleFor(x => x.title)
-                .NotEmpty()
-                .WithMessage("Empty title");
-            RuleFor(x => x.year)
-                .GreaterThan(1900).WithMessage("Year must greate than 1900")
-                .LessThanOrEqualTo(DateTime.Now.Year);
+            //RuleFor(x => x.Title)
+            //    .NotEmpty()
+            //    .WithMessage("Empty title");
+            //RuleFor(x => x.Year)
+            //    .GreaterThan(1900).WithMessage("Year must greate than 1900")
+            //    .LessThanOrEqualTo(DateTime.Now.Year);
 
-            RuleFor(x => x.AutorId)
-                .NotEmpty()
-                .WithMessage("Empty author");
+            //RuleFor(x => x.AuthorId)
+            //    .NotEmpty()
+            //    .WithMessage("Empty author");
 
         }
 

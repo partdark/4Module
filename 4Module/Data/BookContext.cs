@@ -31,10 +31,9 @@ namespace _4Module.Data
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Year).IsRequired();
 
-                entity.HasOne(b => b.Author)
+                entity.HasMany(b => b.Authors)
                   .WithMany(a => a.Books)
-                  .HasForeignKey(b => b.AuthorId)
-                  .OnDelete(DeleteBehavior.Cascade);
+                  .UsingEntity(j => j.ToTable("BookAuthors"));
             });
 
            
