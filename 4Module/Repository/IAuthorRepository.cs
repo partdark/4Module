@@ -10,5 +10,6 @@ namespace _4Module.Repository
         Task<IEnumerable<AuthorResponseDTO>> GetAuthorsByBookIdAsync(Guid bookId);
         Task<AuthorResponseDTO?> GetByIdAsync(Guid id);
         Task<AuthorResponseDTO?> UpdateAsync(UpdateAuthorDTO authorDto);
+        Task<IEnumerable<AuthorBookCountDTO>> GetAuthorBookCountsAsync();
     }
 }

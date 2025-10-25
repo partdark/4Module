@@ -17,4 +17,10 @@
     public record BookDTO(Guid Id, string Title, int Year);
 
     public record CreateBookWithAuthorDTO(string BookTitle,int Year,string AuthorName,string? AuthorBio = null);
+
+    public class AuthorBookCountDTO
+    {
+        public string AuthorName { get; set; } = string.Empty;
+        public long BookCount { get; set; }
+    }
 }

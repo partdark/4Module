@@ -2,6 +2,7 @@
 using _4Module.DTO;
 using _4Module.Models;
 using _4Module.Services;
+using Dapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace _4Module.Repository
@@ -14,6 +15,15 @@ namespace _4Module.Repository
         public AuthorRepository(BookContext context)
         {
             _context = context;
+        }
+
+        public async Task<IEnumerable<AuthorBookCountDTO>> GetAuthorBookCountsAsync()
+        {
+            var sql = @"select a.""Name"" as AuthorName, COUNT(ba.""BooksId"") as BookCount From ""Authors"" a 
+                         LEFT JOIN ""BookAuthors"" ba ON a.""Id"" = ba.""AuthorsId""
+                         GROUP BY  a.""Id"", a.""Name"" ORDER BY BookCount DESC";
+            using var connection = _context.Database.GetDbConnection();
+            return await connection.QueryAsync<AuthorBookCountDTO>(sql);
         }
 
         public async Task<AuthorResponseDTO?> GetByIdAsync(Guid id)

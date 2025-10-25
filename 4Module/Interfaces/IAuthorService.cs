@@ -9,5 +9,8 @@ namespace _4Module.Services
         Task<IEnumerable<AuthorResponseDTO>> GetAllAsync();
         Task<AuthorResponseDTO?> GetByIdAsync(Guid id);
         Task<AuthorResponseDTO?> UpdateAsync(UpdateAuthorDTO authorDto);
+
+        Task<IEnumerable<AuthorBookCountDTO>> GetAuthorBookCountsAsync();
+
     }
 }

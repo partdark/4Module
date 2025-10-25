@@ -194,6 +194,12 @@ namespace _4Module.Controllers
 
             }
         }
+        [HttpGet("GetAuthorBookCountsAsync")]
+        public async Task<IEnumerable<AuthorBookCountDTO>> GetAuthorBookCountsAsync()
+        {
+         return   await _authorService.GetAuthorBookCountsAsync();
+        }
+
     }
 }
 

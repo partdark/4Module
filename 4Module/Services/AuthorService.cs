@@ -44,5 +44,10 @@ namespace _4Module.Services
         {
             return await _authorRepository.GetAuthorsByBookIdAsync(bookId);
         }
+
+        async Task<IEnumerable<AuthorBookCountDTO>> IAuthorService.GetAuthorBookCountsAsync()
+        {
+           return await _authorRepository.GetAuthorBookCountsAsync();
+        }
     }
 }

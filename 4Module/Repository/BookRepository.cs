@@ -15,6 +15,8 @@ namespace _4Module.Repository
             _context = context;
         }
 
+        
+
         public async Task<BookResponseDTO?> GetByIdAsync(Guid id)
         {
             var book = await _context.Books
