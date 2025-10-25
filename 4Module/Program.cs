@@ -2,6 +2,7 @@
 using _4Module;
 using _4Module.Data;
 using _4Module.DTO;
+using _4Module.Interfaces;
 using _4Module.Repository;
 using _4Module.Services;
 using _4Module.Validator;

@@ -1,6 +1,6 @@
 ﻿using _4Module.DTO;
 
-namespace _4Module.Repository
+namespace _4Module.Interfaces
 {
     public interface IBookRepository
     {

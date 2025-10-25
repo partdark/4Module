@@ -55,6 +55,7 @@ namespace _4Module.Controllers
         public async Task<ActionResult<IEnumerable<BookResponseDTO>>> GetAllBooksAsync()
         {
             var books = await _bookService.GetAllAsync();
+            if (books == null) { return NotFound(); }
             return Ok(books);
         }
 
@@ -71,6 +72,7 @@ namespace _4Module.Controllers
         public async Task<ActionResult<BookResponseDTO>> GetBookbyId([FromRoute] Guid id)
         {
             var book = await _bookService.GetByIdAsync(id);
+            if (book == null) { return NotFound(); }
             return Ok(book);
         }
 
@@ -128,6 +130,7 @@ namespace _4Module.Controllers
         public async Task<ActionResult<IEnumerable<AuthorResponseDTO>>> GetAuthors()
         {
             var authors = await _authorService.GetAllAsync();
+            if (authors == null) { return NotFound(); }
             return Ok(authors);
         }
 
@@ -182,7 +185,7 @@ namespace _4Module.Controllers
             return NoContent();
         }
 
-        [HttpPut("bookAndAuthor")]
+        [HttpPost("bookAndAuthor")]
         public async Task<IActionResult> CreateBookAndAuthor([FromBody] CreateBookWithAuthorDTO dto)
         {
             if (
