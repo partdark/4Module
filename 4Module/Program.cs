@@ -58,6 +58,7 @@ builder.Services.AddScoped<IValidator<CreateBookDTO>, CreateBookDTOValidator>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
+builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
 
 
 var app = builder.Build();

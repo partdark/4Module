@@ -15,4 +15,6 @@
     public record AuthorDTO(Guid Id, string Name);
 
     public record BookDTO(Guid Id, string Title, int Year);
+
+    public record CreateBookWithAuthorDTO(string BookTitle,int Year,string AuthorName,string? AuthorBio = null);
 }

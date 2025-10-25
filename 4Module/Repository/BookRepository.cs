@@ -2,6 +2,7 @@
 using _4Module.DTO;
 using _4Module.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace _4Module.Repository
 {
@@ -123,6 +124,42 @@ namespace _4Module.Repository
 
             return books;
         }
+
+        public async Task<bool> CreateBookWithAuthorAsync(CreateBookWithAuthorDTO dto)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var author = new Author
+                {
+                    Name = dto.AuthorName,
+                    Bio = dto.AuthorBio
+                };
+
+                var book = new Book
+                {
+                    Title = dto.BookTitle,
+                    Year = dto.Year,
+                    Authors = new List<Author> { author }
+                };
+
+                _context.Authors.Add(author);
+                _context.Books.Add(book);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return (true);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw new ArgumentException("data error") ;
+                    
+            }
+        }
+
     }
 }
 

@@ -159,7 +159,7 @@ namespace _4Module.Controllers
 
 
         [HttpPut("authors/{id:guid}")]
-        public async Task<IActionResult> UpdateAuthor([FromRoute] Guid id,[FromBody] UpdateAuthorDTO authorDto)
+        public async Task<IActionResult> UpdateAuthor([FromRoute] Guid id, [FromBody] UpdateAuthorDTO authorDto)
         {
             if (id != authorDto.Id)
                 return BadRequest("ID в пути и в теле запроса не совпадают");
@@ -182,7 +182,18 @@ namespace _4Module.Controllers
             return NoContent();
         }
 
-                
+        [HttpPut("bookAndAuthor")]
+        public async Task<IActionResult> CreateBookAndAuthor([FromBody] CreateBookWithAuthorDTO dto)
+        {
+            if (
+              await _bookService.CreateBookWithAuthorAsync(dto))
+                return Ok();
+            else
+            {
+                return NoContent();
+
+            }
+        }
     }
 }
 

@@ -16,12 +16,12 @@ namespace _4Module.Services
 
         public async Task<BookResponseDTO?> GetByIdAsync(Guid id)
         {
-         return  await _bookRepository.GetByIdAsync(id);
+            return await _bookRepository.GetByIdAsync(id);
         }
 
         public async Task<IEnumerable<BookResponseDTO>> GetAllAsync()
         {
-           return await _bookRepository.GetAllAsync();
+            return await _bookRepository.GetAllAsync();
         }
 
         public async Task<BookResponseDTO> CreateAsync(CreateBookDTO bookDto)
@@ -32,18 +32,25 @@ namespace _4Module.Services
 
         public async Task<BookResponseDTO?> UpdateAsync(UpdateBookDTO bookDto)
         {
-        return   await _bookRepository.UpdateAsync(bookDto);
+            return await _bookRepository.UpdateAsync(bookDto);
         }
 
         public async Task<bool> DeleteAsync(Guid id)
         {
-          return await (_bookRepository.DeleteAsync(id));
+            return await (_bookRepository.DeleteAsync(id));
         }
 
 
         public async Task<IEnumerable<BookResponseDTO>> GetBooksByAuthorIdAsync(Guid authorId)
         {
-           return await _bookRepository.GetBooksByAuthorIdAsync(authorId);
+            return await _bookRepository.GetBooksByAuthorIdAsync(authorId);
         }
+
+        public async Task<bool> CreateBookWithAuthorAsync(CreateBookWithAuthorDTO dto)
+        {
+            return await _bookRepository.CreateBookWithAuthorAsync(dto);
+        }
+
+
     }
 }
