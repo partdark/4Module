@@ -1,13 +1,9 @@
 ﻿
 using _4Module;
-using _4Module.Data;
-using _4Module.DTO;
-using _4Module.Interfaces;
-using _4Module.Repository;
-using _4Module.Services;
-using _4Module.Validator;
+using Application.DependencyInjection;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Infrastructure.DependencyInjection;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts;
@@ -20,8 +16,8 @@ using System.Reflection;
 var builder = WebApplication.CreateBuilder(args);
 
 
- builder.Services.AddDbContext<BookContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// builder.Services.AddDbContext<BookContext>(options =>
+//    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))); 
 builder.Services.Configure<MySettings>(builder.Configuration.GetSection("MySettings"));
 
 
@@ -55,11 +51,8 @@ builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-builder.Services.AddScoped<IValidator<CreateBookDTO>, CreateBookDTOValidator>();
-builder.Services.AddScoped<IBookService, BookService>();
-builder.Services.AddScoped<IAuthorService, AuthorService>();
-builder.Services.AddScoped<IBookRepository, BookRepository>();
-builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication();
 
 
 var app = builder.Build();

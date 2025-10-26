@@ -1,9 +1,7 @@
-using _4Module.DTO;
-
-using _4Module.Models;
-using _4Module.Services;
+using Application;
+using Application.DTO;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+using Repository.Interfaces;
 
 namespace _4Module.Controllers
 {
@@ -17,34 +15,21 @@ namespace _4Module.Controllers
 
     public class BookController : ControllerBase
     {
-        private readonly MySettings _settings;
-
-        private readonly IBookService _bookService;
+              private readonly IBookService _bookService;
         private readonly IAuthorService _authorService;
+        private readonly IAuthorReportService _reportService;
 
 
-        public BookController(IOptions<MySettings> setting, IBookService bookService, IAuthorService authorService)
+        public BookController( IBookService bookService, IAuthorService authorService, IAuthorReportService reportService)
         {
-            _settings = setting.Value;
+           
             _bookService = bookService;
             _authorService = authorService;
+            _reportService = reportService;
         }
 
 
-        /// <summary>
-        /// Get setting from MySettings
-        /// </summary>
-        [HttpGet("settings")]
-        public async Task<IActionResult> GetSettings()
-        {
-            await Task.Delay(1000);
-            return Ok(new
-            {
-                ApplicationName = _settings.ApplicationName,
-                MaxBooksPerPage = _settings.MaxBooksPerPage,
-                ApiSettings = _settings.ApiSettings
-            });
-        }
+     
 
         /// <summary>
         /// Get all Books
@@ -115,17 +100,7 @@ namespace _4Module.Controllers
 
         }
 
-        /// <summary>
-        /// middleware check
-        /// </summary>
-        /// <exception cref="InvalidOperationException"></exception>
-        [HttpGet("error")]
-        public async Task<IActionResult> DivideByZero()
-        {
-            await Task.Delay(1000);
-
-            throw new InvalidOperationException();
-        }
+      
         [HttpGet("authors")]
         public async Task<ActionResult<IEnumerable<AuthorResponseDTO>>> GetAuthors()
         {
@@ -200,7 +175,7 @@ namespace _4Module.Controllers
         [HttpGet("GetAuthorBookCountsAsync")]
         public async Task<IEnumerable<AuthorBookCountDTO>> GetAuthorBookCountsAsync()
         {
-         return   await _authorService.GetAuthorBookCountsAsync();
+         return   await _reportService.GetAuthorBookCountsAsync();
         }
 
     }
