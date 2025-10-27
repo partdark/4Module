@@ -20,7 +20,10 @@ namespace Infrastructure.DependencyInjection
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            
+
+            services.AddStackExchangeRedisCache(options => { options.Configuration = "localhost:6379"; }
+    );
+
             services.AddDbContext<BookContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
