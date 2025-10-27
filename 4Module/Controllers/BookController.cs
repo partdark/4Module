@@ -1,5 +1,6 @@
 using Application;
 using Application.DTO;
+using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interfaces;
 
@@ -18,14 +19,17 @@ namespace _4Module.Controllers
               private readonly IBookService _bookService;
         private readonly IAuthorService _authorService;
         private readonly IAuthorReportService _reportService;
+        private readonly IProductReviewService _productReview;
 
 
-        public BookController( IBookService bookService, IAuthorService authorService, IAuthorReportService reportService)
+        public BookController( IBookService bookService, IAuthorService authorService, IAuthorReportService reportService
+            , IProductReviewService productReview)
         {
            
             _bookService = bookService;
             _authorService = authorService;
             _reportService = reportService;
+            _productReview = productReview;
         }
 
 
@@ -42,6 +46,17 @@ namespace _4Module.Controllers
             var books = await _bookService.GetAllAsync();
             if (books == null) { return NotFound(); }
             return Ok(books);
+        }
+
+        [HttpGet("products/{id:guid}/details")]
+        public async Task<ActionResult<ProductDetailsDto>> GetDetails([FromRoute] Guid id)
+        {
+            var book = await _bookService.GetByIdAsync(id);
+            if (book == null) { return NotFound(); }
+            var reviews = await _productReview.GetByProductAsync(id);
+            var details = new ProductDetailsDto(book, reviews);
+
+            return Ok(details);
         }
 
 
