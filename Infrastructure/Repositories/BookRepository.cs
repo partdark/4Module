@@ -3,6 +3,7 @@ using Domain.Entitties;
 using Infastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using System.Net;
 using System.Text.Json;
 
 namespace Repository
@@ -61,6 +62,7 @@ namespace Repository
         public async Task<Book?> UpdateAsync(Book book)
         {
             _context.Books.Update(book);
+            await _cache.RemoveAsync($"book:{book.Id}");
             await _context.SaveChangesAsync();
             return book;
         }
@@ -69,7 +71,7 @@ namespace Repository
         {
             var book = await _context.Books.FindAsync(id);
             if (book == null) return false;
-
+            await _cache.RemoveAsync($"book:{book.Id}");
             _context.Books.Remove(book);
             await _context.SaveChangesAsync();
             return true;
