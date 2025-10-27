@@ -6,6 +6,7 @@ using FluentValidation.AspNetCore;
 using Infrastructure.DependencyInjection;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts;
 using Microsoft.Extensions.Options;
 using System;
@@ -27,6 +28,15 @@ builder.Services.Configure<MySettings>(builder.Configuration.GetSection("MySetti
 
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
+builder.Services.AddOutputCache(options =>
+{
+    options.AddPolicy("BookPolicy", policity =>
+{
+    policity.Expire(TimeSpan.FromSeconds(60)).SetVaryByRouteValue("id");
+}
+    );
+}
+ );
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -102,8 +112,9 @@ app.Use(async (context, next) =>
 
 // Configure the HTTP request pipeline.
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseOutputCache();
 
 
 
