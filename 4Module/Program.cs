@@ -7,6 +7,7 @@ using Infrastructure.DependencyInjection;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts;
+using Microsoft.Extensions.Options;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -26,6 +27,8 @@ builder.Services.Configure<MySettings>(builder.Configuration.GetSection("MySetti
 
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
+builder.Services.AddStackExchangeRedisCache(options => { options.Configuration = "redis:6379"; }
+    );
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
