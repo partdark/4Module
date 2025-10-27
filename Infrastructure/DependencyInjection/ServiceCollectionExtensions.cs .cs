@@ -4,10 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Repository;
-using Repository.Interfaces;
-using Repository.Services;
+
 using MongoDB.Driver;
 using Domain.Interfaces;
+using Infrastructure.Services;
+using Infrastructure.Interfaces;
+
 
 namespace Infrastructure.DependencyInjection
 {
@@ -25,7 +27,7 @@ namespace Infrastructure.DependencyInjection
             services.AddDbContext<BookContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
-           
+            services.AddHostedService<AverageRatingCalculatorService>();
             services.AddScoped<IBookRepository, BookRepository>();
             services.AddScoped<IAuthorRepository, AuthorRepository>();
             services.AddScoped<IAuthorReportService, AuthorReportService>();

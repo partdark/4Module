@@ -24,7 +24,7 @@
     public record ProductReviewResponseDTO(string Id, Guid BookId, string ReviewerName, int Rating, string Comment, DateTime Date);
 
 
-    public record ProductDetailsDto (BookResponseDTO BookResponse, IEnumerable<ProductReviewResponseDTO> Reviews);
+    public record ProductDetailsDto (BookResponseDTO BookResponse, string rating, IEnumerable<ProductReviewResponseDTO> Reviews);
 
     public class AuthorBookCountDTO
     {

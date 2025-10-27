@@ -21,6 +21,11 @@ namespace Repository
             return productReview;
         }
 
+        public async Task<IEnumerable<ProductReview>> GetAllAsync()
+        {
+            return await _reviews.Find(_ => true).ToListAsync();
+        }
+
         public async Task<ProductReview> GetByIdAsync(string id)
         {
             return await _reviews.Find(x => x.Id == id).FirstOrDefaultAsync();

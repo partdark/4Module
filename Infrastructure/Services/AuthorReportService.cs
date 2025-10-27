@@ -2,14 +2,15 @@
 using Application.DTO;
 using Dapper;
 using Infastructure.Data;
+using Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Repository.Interfaces;
 
 
 
-namespace Repository.Services
+
+namespace Infrastructure.Services
 {
-    internal class AuthorReportService : IAuthorReportService
+    public class AuthorReportService : IAuthorReportService
     {
         private readonly BookContext _context;
 
