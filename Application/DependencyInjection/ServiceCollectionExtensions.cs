@@ -1,4 +1,6 @@
 ﻿using Application.DTO;
+using Application.Interfaces;
+using Application.Services;
 using Application.Validator;
 using Applications.Services;
 using FluentValidation;
@@ -16,9 +18,10 @@ namespace Application.DependencyInjection
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IBookService, BookService>();
+            services.AddScoped<IProductReviewService, ProductReviewService>();
             services.AddScoped<IAuthorService, AuthorService>();
             services.AddScoped<IValidator<CreateBookDTO>, CreateBookDTOValidator>();
-           
+            
 
             return services;
         }

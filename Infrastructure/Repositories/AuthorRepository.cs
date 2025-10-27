@@ -1,6 +1,7 @@
 ﻿
-using Domain;
+
 using Domain.Entitties;
+using Domain.Interfaces;
 using Infastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

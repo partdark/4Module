@@ -18,6 +18,14 @@
 
     public record CreateBookWithAuthorDTO(string BookTitle,int Year,string AuthorName,string? AuthorBio = null);
 
+
+    public record CreateProductReviewDTO ( Guid BookId, string ReviewerName, int Rating, string Comment);
+
+    public record ProductReviewResponseDTO(string Id, Guid BookId, string ReviewerName, int Rating, string Comment, DateTime Date);
+
+
+
+
     public class AuthorBookCountDTO
     {
         public string AuthorName { get; set; } = string.Empty;
