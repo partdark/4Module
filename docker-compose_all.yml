@@ -1,0 +1,28 @@
+services:
+  book-api:
+    build:
+      context: .
+      dockerfile: 4Module/Dockerfile  
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=bookdb;Username=postgres;Password=postgrespw
+      - DOTNET_CLI_TELEMETRY_OPTOUT=1
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: bookdb
+      POSTGRES_PASSWORD: postgrespw
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

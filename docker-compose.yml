@@ -1,25 +1,16 @@
-services:
-  book-api:
-    build:
-      context: .
-      dockerfile: 4module/Dockerfile    
-    ports:
-      - "5000:80"
-    environment:
-      - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=bookdb;Username=postgres;Password=postgrespw
-    depends_on:
-      - postgres
 
+services:
   postgres:
     image: postgres:15
     environment:
       POSTGRES_DB: bookdb
       POSTGRES_PASSWORD: postgrespw
+      POSTGRES_USER: postgres  
     ports:
-      - "5432:5432"
+      - "5433:5432"  
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped  
 
 volumes:
   postgres_data:
