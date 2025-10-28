@@ -2,6 +2,7 @@ using Application;
 using Application.DTO;
 using Application.Interfaces;
 using Infrastructure.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -13,7 +14,7 @@ namespace _4Module.Controllers
     /// Base Book Controller
     /// </summary>
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
 
 
     public class BookController : ControllerBase
@@ -37,14 +38,16 @@ namespace _4Module.Controllers
         }
 
 
-     
+
 
         /// <summary>
         /// Get all Books
         /// </summary>
         /// <returns>All books</returns>
         /// <response code ="200">Succes</response>
+       
         [HttpGet("books")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<BookResponseDTO>>> GetAllBooksAsync()
         {
             var books = await _bookService.GetAllAsync();

@@ -2,6 +2,7 @@
 using _4Module;
 using Application.DependencyInjection;
 using Application.Settings;
+using Applications.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure.DependencyInjection;
@@ -30,8 +31,9 @@ builder.Services.Configure<MySettings>(builder.Configuration.GetSection("MySetti
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+
 builder.Services.AddHealthChecks();
+builder.Services.AddScoped<JwtService>();
 builder.Services.AddOutputCache(options =>
 {
     options.AddPolicy("BookPolicy", policity =>
@@ -52,7 +54,28 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "Book Api"
     });
-
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
 
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
@@ -74,6 +97,17 @@ builder.Services.AddAuthentication(options =>
 }
     ).AddJwtBearer(options =>
     {
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = 401;
+                context.Response.ContentType = "application/json";
+                return context.Response.WriteAsync("{\"error\":\"Unauthorized\"}");
+            }
+        };
+
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
             ValidateIssuer = true,
@@ -84,7 +118,7 @@ builder.Services.AddAuthentication(options =>
             ValidateLifetime = true,
 
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]!))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]!))
         };
     });
 
@@ -100,6 +134,22 @@ var app = builder.Build();
 
 
 
+
+
+
+
+// Configure the HTTP request pipeline.
+
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseRouting();
+
+app.UseOutputCache();
+
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
 
 app.UseExceptionHandler(exceptionHandlerApp =>
 {
@@ -139,23 +189,9 @@ app.Use(async (context, next) =>
 );
 
 
-// Configure the HTTP request pipeline.
-
-app.UseSwagger();
-app.UseSwaggerUI();
-app.UseOutputCache();
-
-
-
-
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
 app.MapHealthChecks("/healthz");
 
 
-app.MapControllers();
+
 
 app.Run();

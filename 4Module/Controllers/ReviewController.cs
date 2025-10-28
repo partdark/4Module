@@ -13,7 +13,7 @@ namespace _4Module.Controllers
     /// Base Review Controller
     /// </summary>
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
 
     public class ReviewController : ControllerBase
     {

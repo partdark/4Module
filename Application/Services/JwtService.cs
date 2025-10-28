@@ -13,7 +13,7 @@ namespace Applications.Services
     {
 
         private readonly JwtSettings _jwtSettings;
-        
+
         public JwtService(JwtSettings jwtSettings)
         {
             _jwtSettings = jwtSettings;
@@ -29,17 +29,18 @@ namespace Applications.Services
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, user.UserName ?? "")
             };
-            var key =new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            
+
             var token = new JwtSecurityToken(
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
+                claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        
+
     }
 }
