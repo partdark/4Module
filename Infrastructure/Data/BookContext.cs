@@ -22,6 +22,7 @@ namespace Infastructure.Data
 
             modelBuilder.Entity<Author>(entity =>
             {
+                base.OnModelCreating(modelBuilder);
                 entity.ToTable("Authors");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(255);

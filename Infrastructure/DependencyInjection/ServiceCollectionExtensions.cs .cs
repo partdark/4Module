@@ -28,7 +28,14 @@ namespace Infrastructure.DependencyInjection
             services.AddDbContext<BookContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentity<IdentityUser, IdentityRole>()
+            services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            {
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 5;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireDigit = false;
+            })
                 .AddEntityFrameworkStores<BookContext>()
                 .AddDefaultTokenProviders();
 
@@ -37,7 +44,7 @@ namespace Infrastructure.DependencyInjection
             services.AddScoped<IAuthorRepository, AuthorRepository>();
             services.AddScoped<IAuthorReportService, AuthorReportService>();
             services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
-            
+
 
 
             return services;
