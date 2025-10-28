@@ -1,6 +1,8 @@
 ﻿using Application.DTO;
+using Applications.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace _4Module.Controllers
 {
@@ -12,11 +14,13 @@ namespace _4Module.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly JwtService _jwtService;
 
-        public AuthController (UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager     )
+        public AuthController (UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, JwtService jwtService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _jwtService = jwtService;
         }
 
 
@@ -42,14 +46,15 @@ namespace _4Module.Controllers
         }
 
         [HttpPost("/login")]
-        public async Task<IActionResult> Login([FromBody] LoginUserDto loginUser)
+        public async Task<ActionResult<JwtSecurityToken>> Login([FromBody] LoginUserDto loginUser)
         {
             var user = await _userManager.FindByEmailAsync(loginUser.Email);
             if (user == null) { return Ok(new LoginUserResponseDto( false, "Wrong User Email")); }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginUser.Password, false);
             if (result.Succeeded) {
-                return Ok(new LoginUserResponseDto(true, "Login successful"));
+               var token = _jwtService.GenerateToken(user); 
+                return Ok(token);
             }
             else
             {
