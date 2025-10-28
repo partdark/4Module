@@ -121,6 +121,7 @@ app.UseOutputCache();
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHealthChecks("/healthz");

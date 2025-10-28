@@ -9,6 +9,7 @@ using MongoDB.Driver;
 using Domain.Interfaces;
 using Infrastructure.Services;
 using Infrastructure.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace Infrastructure.DependencyInjection
@@ -26,6 +27,10 @@ namespace Infrastructure.DependencyInjection
 
             services.AddDbContext<BookContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddIdentity<IdentityUser, IdentityRole>()
+                .AddEntityFrameworkStores<BookContext>()
+                .AddDefaultTokenProviders();
 
             services.AddHostedService<AverageRatingCalculatorService>();
             services.AddScoped<IBookRepository, BookRepository>();

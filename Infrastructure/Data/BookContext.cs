@@ -1,12 +1,14 @@
 ﻿
 
 using Domain.Entitties;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace Infastructure.Data
 {
-    public class BookContext : DbContext
+    public class BookContext : IdentityDbContext<IdentityUser>
     {
         public BookContext(DbContextOptions options) : base(options)
         {
