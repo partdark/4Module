@@ -1,7 +1,10 @@
 using Application;
 using Application.DTO;
+using Application.Interfaces;
+using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Repository.Interfaces;
+using Microsoft.Extensions.Caching.Distributed;
+
 
 namespace _4Module.Controllers
 {
@@ -18,14 +21,19 @@ namespace _4Module.Controllers
               private readonly IBookService _bookService;
         private readonly IAuthorService _authorService;
         private readonly IAuthorReportService _reportService;
+       
+        private readonly IProductReviewService _productReview;
+        private readonly IDistributedCache _cache;
 
-
-        public BookController( IBookService bookService, IAuthorService authorService, IAuthorReportService reportService)
+        public BookController( IBookService bookService, IAuthorService authorService, IAuthorReportService reportService
+            , IProductReviewService productReview, IDistributedCache cache)
         {
            
             _bookService = bookService;
             _authorService = authorService;
             _reportService = reportService;
+            _productReview = productReview;
+            _cache = cache;
         }
 
 
@@ -42,6 +50,23 @@ namespace _4Module.Controllers
             var books = await _bookService.GetAllAsync();
             if (books == null) { return NotFound(); }
             return Ok(books);
+        }
+        /// <summary>
+        /// Get all aformation about book
+        /// </summary>
+        /// <returns>Book and reviews</returns>
+        /// <response code ="200">Succes</response>
+        [HttpGet("products/{id:guid}/details")]
+        public async Task<ActionResult<ProductDetailsDto>> GetDetails([FromRoute] Guid id)
+        {
+            
+            var book = await _bookService.GetByIdAsync(id);
+            if (book == null) { return NotFound(); }
+            var reviews = await _productReview.GetByProductAsync(id);
+            var rating = await _cache.GetStringAsync($"rating:{id}");
+            var details = new ProductDetailsDto(book, rating, reviews);
+
+            return Ok(details);
         }
 
 

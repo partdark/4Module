@@ -1,7 +1,10 @@
-﻿using Domain;
+﻿using Domain.Interfaces;
 using Domain.Entitties;
 using Infastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Net;
+using System.Text.Json;
 
 namespace Repository
 {
@@ -9,16 +12,36 @@ namespace Repository
     {
         private readonly BookContext _context;
 
-        public BookRepository(BookContext context)
+        private readonly IDistributedCache _cache;
+
+        public BookRepository(BookContext context, IDistributedCache distributedCache)
         {
             _context = context;
+            _cache = distributedCache;
         }
 
         public async Task<Book?> GetByIdAsync(Guid id)
         {
-            return await _context.Books
+            var cacheKey = $"book:{id}";
+
+            var chachedBook = await _cache.GetStringAsync(cacheKey);
+            if (cacheKey != null && !string.IsNullOrEmpty(chachedBook)) {
+                return JsonSerializer.Deserialize<Book>(chachedBook);
+            }
+
+            var book =  await _context.Books
                 .Include(b => b.Authors)
                 .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (book != null) {
+                var options = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+                };
+                await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(book), options);
+                   
+            }
+            return book;
         }
 
         public async Task<IEnumerable<Book>> GetAllAsync()
@@ -39,6 +62,7 @@ namespace Repository
         public async Task<Book?> UpdateAsync(Book book)
         {
             _context.Books.Update(book);
+            await _cache.RemoveAsync($"book:{book.Id}");
             await _context.SaveChangesAsync();
             return book;
         }
@@ -47,7 +71,7 @@ namespace Repository
         {
             var book = await _context.Books.FindAsync(id);
             if (book == null) return false;
-
+            await _cache.RemoveAsync($"book:{book.Id}");
             _context.Books.Remove(book);
             await _context.SaveChangesAsync();
             return true;

@@ -2,7 +2,7 @@
 
 using Domain.Entitties;
 
-namespace Domain
+namespace Domain.Interfaces
 {
     public interface IBookRepository
     {

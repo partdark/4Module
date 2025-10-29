@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Repository.Interfaces
+namespace Infrastructure.Interfaces
 {
 
     public interface IAuthorReportService
