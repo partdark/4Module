@@ -63,6 +63,28 @@ namespace xUnit_Test_Project
 
             Assert.NotNull(result);
             Assert.Equal(expectedBook.Id, result.Id);
+            Assert.Equal(expectedBook.Title, result.Title);
+            Assert.Equal(expectedBook.Year, result.Year);
+            _bookMock.Verify(r => r.GetByIdAsync(bookId), Times.Once);
+
+        }
+        [Fact]
+        public async Task DeleteByIdtest()
+        {
+            var bookId = Guid.NewGuid();
+            var expectedBook = new Book
+            {
+                Id = bookId,
+                Authors = new List<Author>(),
+                Title = "testTitle",
+                Year = 1985
+            };
+            _bookMock.Setup(b => b.GetByIdAsync(bookId)).ReturnsAsync(expectedBook);
+             _bookMock.Setup(b => b.DeleteAsync(It.IsAny<Guid>())).ReturnsAsync(true);
+
+            await _bookService.DeleteAsync(bookId);
+
+            _bookMock.Verify(r => r.DeleteAsync(bookId), Times.Once);
 
         }
 
