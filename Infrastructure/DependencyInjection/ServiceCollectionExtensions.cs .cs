@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Identity.Core;
+using Microsoft.Extensions.Identity;
 using MongoDB.Driver;
 using Repository;
 
@@ -38,8 +38,13 @@ namespace Infrastructure.DependencyInjection
                 options.Password.RequireLowercase = false;
                 options.Password.RequireDigit = false;
             })
-  .AddEntityFrameworkStores<BookContext>()
-  .AddDefaultTokenProviders();
+ .AddRoles<IdentityRole>()
+ .AddEntityFrameworkStores<BookContext>()
+ .AddDefaultTokenProviders()
+ .AddRoleManager<RoleManager<IdentityRole>>()
+ .AddUserManager<UserManager<IdentityUser>>();
+
+
 
             services.AddHostedService<AverageRatingCalculatorService>();
             services.AddScoped<IBookRepository, BookRepository>();

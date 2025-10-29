@@ -19,17 +19,17 @@ namespace _4Module.Controllers
 
     public class BookController : ControllerBase
     {
-              private readonly IBookService _bookService;
+        private readonly IBookService _bookService;
         private readonly IAuthorService _authorService;
         private readonly IAuthorReportService _reportService;
-       
+
         private readonly IProductReviewService _productReview;
         private readonly IDistributedCache _cache;
 
-        public BookController( IBookService bookService, IAuthorService authorService, IAuthorReportService reportService
+        public BookController(IBookService bookService, IAuthorService authorService, IAuthorReportService reportService
             , IProductReviewService productReview, IDistributedCache cache)
         {
-           
+
             _bookService = bookService;
             _authorService = authorService;
             _reportService = reportService;
@@ -45,9 +45,9 @@ namespace _4Module.Controllers
         /// </summary>
         /// <returns>All books</returns>
         /// <response code ="200">Succes</response>
-       
+
         [HttpGet("books")]
-        [Authorize]
+        
         public async Task<ActionResult<IEnumerable<BookResponseDTO>>> GetAllBooksAsync()
         {
             var books = await _bookService.GetAllAsync();
@@ -62,7 +62,7 @@ namespace _4Module.Controllers
         [HttpGet("products/{id:guid}/details")]
         public async Task<ActionResult<ProductDetailsDto>> GetDetails([FromRoute] Guid id)
         {
-            
+
             var book = await _bookService.GetByIdAsync(id);
             if (book == null) { return NotFound(); }
             var reviews = await _productReview.GetByProductAsync(id);
@@ -80,6 +80,7 @@ namespace _4Module.Controllers
         /// <returns>Return book with your id</returns>
         /// <response code ="200">Succes</response>
         /// /// <response code ="404">Book with your id not found</response>
+        [Authorize]
         [HttpGet("books/{id:guid}")]
 
         public async Task<ActionResult<BookResponseDTO>> GetBookbyId([FromRoute] Guid id)
@@ -120,6 +121,7 @@ namespace _4Module.Controllers
         /// </summary>
         /// <param name="id">Book Id for delete</param>
         [HttpDelete("books/{id:guid}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteBookById([FromRoute] Guid id)
         {
             await _bookService.DeleteAsync(id);
@@ -128,7 +130,7 @@ namespace _4Module.Controllers
 
         }
 
-      
+
         [HttpGet("authors")]
         public async Task<ActionResult<IEnumerable<AuthorResponseDTO>>> GetAuthors()
         {
@@ -179,6 +181,7 @@ namespace _4Module.Controllers
 
 
         [HttpDelete("authors/{id:guid}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteAuthor([FromRoute] Guid id)
         {
             var result = await _authorService.DeleteAsync(id);
@@ -203,7 +206,7 @@ namespace _4Module.Controllers
         [HttpGet("GetAuthorBookCountsAsync")]
         public async Task<IEnumerable<AuthorBookCountDTO>> GetAuthorBookCountsAsync()
         {
-         return   await _reportService.GetAuthorBookCountsAsync();
+            return await _reportService.GetAuthorBookCountsAsync();
         }
 
     }

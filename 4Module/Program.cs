@@ -6,8 +6,10 @@ using Applications.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure.DependencyInjection;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection.Repositories;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts;
@@ -16,6 +18,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
 
 
@@ -99,8 +102,19 @@ builder.Services.AddAuthentication(options =>
     {
         options.Events = new JwtBearerEvents
         {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"JWT Auth Failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine($"JWT Token Validated for: {context.Principal.Identity.Name}");
+                return Task.CompletedTask;
+            },
             OnChallenge = context =>
             {
+                Console.WriteLine($"JWT Challenge: {context.Error}");
                 context.HandleResponse();
                 context.Response.StatusCode = 401;
                 context.Response.ContentType = "application/json";
@@ -108,19 +122,29 @@ builder.Services.AddAuthentication(options =>
             }
         };
 
-        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-            {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
             ValidateIssuer = true,
             ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
             ValidateAudience = true,
             ValidAudience = builder.Configuration["JwtSettings:Audience"],
-
             ValidateLifetime = true,
-
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]!))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]!)),
+            RoleClaimType = ClaimTypes.Role,
+            NameClaimType = ClaimTypes.Name
         };
     });
+
+
+//builder.Services.PostConfigure<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme, options =>
+//{
+//    options.LoginPath = null;
+//    options.LogoutPath = null;
+//    options.AccessDeniedPath = null;
+//});
+
+
 
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
@@ -131,26 +155,6 @@ builder.Services.AddApplication();
 
 
 var app = builder.Build();
-
-
-
-
-
-
-
-// Configure the HTTP request pipeline.
-
-app.UseSwagger();
-app.UseSwaggerUI();
-app.UseRouting();
-
-app.UseOutputCache();
-
-app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
-
 app.UseExceptionHandler(exceptionHandlerApp =>
 {
     exceptionHandlerApp.Run(async context =>
@@ -178,6 +182,7 @@ app.UseExceptionHandler(exceptionHandlerApp =>
 
 app.Use(async (context, next) =>
 {
+  
     var startTime = DateTime.UtcNow;
     var stopwatch = Stopwatch.StartNew();
     Console.WriteLine($"Start {context.Request.Method}{context.Request.Path} time - {startTime}");
@@ -187,6 +192,31 @@ app.Use(async (context, next) =>
     Console.WriteLine($"done {context.Request.Method}{context.Request.Path}, status {context.Response.StatusCode} time - {stopwatch.ToString()}");
 }
 );
+
+
+
+
+
+
+// Configure the HTTP request pipeline.
+
+
+
+
+
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseOutputCache();
+
+app.UseHttpsRedirection();
+
+
+app.MapControllers();
+
 
 
 app.MapHealthChecks("/healthz");
