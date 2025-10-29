@@ -135,14 +135,24 @@ builder.Services.AddAuthentication(options =>
             NameClaimType = ClaimTypes.Name
         };
     });
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("OlderThan18", policy =>
+        policy.RequireAssertion(context =>
+        {
+            var dateOfBirthClaim = context.User.FindFirst("DateOfBirth");
+            if (dateOfBirthClaim == null) return false;
 
+            if (DateTime.TryParse(dateOfBirthClaim.Value, out var dateOfBirth))
+            {
+                var age = DateTime.Today.Year - dateOfBirth.Year;
+                if (dateOfBirth.Date > DateTime.Today.AddYears(-age)) age--;
+                return age >= 18;
+            }
+            return false;
+        }));
+});
 
-//builder.Services.PostConfigure<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme, options =>
-//{
-//    options.LoginPath = null;
-//    options.LogoutPath = null;
-//    options.AccessDeniedPath = null;
-//});
 
 
 

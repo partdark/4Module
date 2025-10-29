@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace _4Module.Controllers
 {
@@ -60,6 +61,7 @@ namespace _4Module.Controllers
                     await _roleManager.CreateAsync(new IdentityRole(createUserDto.Role));
                 }
                 await _userManager.AddToRoleAsync(user, createUserDto.Role);
+                await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim("DateOfBirth", createUserDto.DateOfBirth.ToString("yyyy-MM-dd")));
                 return Ok(new ResponseUserDto(user.Id, user.UserName, user.Email));
             }
             var errors = registerUser.Errors.Select(e => e.Description).ToList();
@@ -81,7 +83,10 @@ namespace _4Module.Controllers
 
             var result = await _userManager.CheckPasswordAsync(user, loginUser.Password);
             if (result) {
-               var token = _jwtService.GenerateToken(user, _userManager); 
+                var claims = await _userManager.GetClaimsAsync(user);
+                var dateOfBirthClaim = claims.FirstOrDefault(c => c.Type == "DateOfBirth");
+                var dateOfBirth = dateOfBirthClaim != null ? DateOnly.Parse(dateOfBirthClaim.Value) : DateOnly.MinValue;
+                var token = _jwtService.GenerateToken(user, _userManager, dateOfBirth); 
                 return Ok( new { token } );
             }
             else

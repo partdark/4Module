@@ -20,7 +20,7 @@ namespace Applications.Services
 
         }
 
-        public async Task<string> GenerateToken(IdentityUser user, UserManager<IdentityUser> userManager)
+        public async Task<string> GenerateToken(IdentityUser user, UserManager<IdentityUser> userManager, DateOnly dateOfBirth)
         {
 
             var userRoles = await userManager.GetRolesAsync(user);
@@ -30,7 +30,8 @@ namespace Applications.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName ?? "")
+                new Claim(ClaimTypes.Name, user.UserName ?? ""),
+                new Claim("DateOfBirth", dateOfBirth.ToString("yyyy-MM-dd"))
             };
 
             foreach (var role in userRoles)

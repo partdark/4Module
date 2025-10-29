@@ -14,6 +14,7 @@ namespace _4Module.Controllers
     /// Base Book Controller
     /// </summary>
     [ApiController]
+    
     [Route("api/[controller]")]
 
 
@@ -132,6 +133,7 @@ namespace _4Module.Controllers
 
 
         [HttpGet("authors")]
+        [Authorize(Policy = "OlderThan18")]
         public async Task<ActionResult<IEnumerable<AuthorResponseDTO>>> GetAuthors()
         {
             var authors = await _authorService.GetAllAsync();
