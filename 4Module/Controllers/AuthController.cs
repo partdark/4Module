@@ -41,6 +41,21 @@ namespace _4Module.Controllers
             });
         }
 
+        [HttpGet("user-info")]
+        [Authorize]
+        public IActionResult GetUserInfo()
+        {
+            var userName = User.Identity.Name;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            return Ok(new
+            {
+                UserName = userName,
+                UserId = userId,
+                IsAuthenticated = User.Identity.IsAuthenticated
+            });
+        }
+
         [HttpPost("register")]
         public async Task<ActionResult<ResponseUserDto>> RegisterUser([FromBody] CreateUserDto createUserDto )
         {
