@@ -1,3 +1,4 @@
+using Application.DTO;
 using Domain.Entitties;
 using Infastructure.Data;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -10,7 +11,7 @@ using Xunit;
 namespace IntegrationTest
 {
 
-   // api/Book/books
+    // api/Book/books
     public class BookIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly WebApplicationFactory<Program> _factory;
@@ -53,15 +54,30 @@ namespace IntegrationTest
         [Fact]
         public async Task PostTestInvalidDto()
         {
-            var badDto = new
-            {
-                Title = "",
-                Year = 1204,
-                AuthirId = new Guid[] { }
-            };
+            var badDto = new CreateBookDTO
+            (
+                1200,
+                 new List<Guid>(),
+                "test title"
+
+           );
 
             var response = await _httpClient.PostAsJsonAsync("/api/Book/books", badDto);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+        [Fact]
+        public async Task PostTestValidDto()
+        {
+            var validDto = new CreateBookDTO
+            (
+                1952,
+                new List<Guid>(),
+                "test title"
+
+           );
+
+            var response = await _httpClient.PostAsJsonAsync("/api/Book/books", validDto);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
     }
 
@@ -72,7 +88,7 @@ namespace IntegrationTest
         {
             builder.ConfigureServices(services =>
             {
-              
+
                 var descriptors = services
                     .Where(d => d.ServiceType.Name.Contains("DbContext") ||
                                d.ServiceType == typeof(DbContextOptions<BookContext>) ||
@@ -84,7 +100,7 @@ namespace IntegrationTest
                     services.Remove(descriptor);
                 }
 
-              
+
                 services.AddDbContext<BookContext>(options =>
                 {
                     options.UseInMemoryDatabase("DbTest");
@@ -93,7 +109,7 @@ namespace IntegrationTest
 
             var host = base.CreateHost(builder);
 
-            
+
             InitializeDatabase(host);
 
             return host;
