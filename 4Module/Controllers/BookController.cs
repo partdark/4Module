@@ -154,6 +154,7 @@ namespace _4Module.Controllers
 
 
         [HttpPost("authors")]
+        [Authorize]
         public async Task<ActionResult<AuthorResponseDTO>> CreateAuthor(CreateAuthorDTO authorDto)
         {
             try

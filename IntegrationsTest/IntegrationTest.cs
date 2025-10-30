@@ -79,6 +79,20 @@ namespace IntegrationTest
             var response = await _httpClient.PostAsJsonAsync("/api/Book/books", validDto);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
+
+        [Fact]
+        public async Task AuthTest()
+        {
+            var validDto = new CreateAuthorDTO
+            (
+                "Jonny",
+                "bio"
+
+           );
+
+            var response = await _httpClient.PostAsJsonAsync("api/Book/authors", validDto);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
     }
 
 
