@@ -3,6 +3,7 @@ using Application.DTO;
 using Application.Interfaces;
 using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -160,7 +161,7 @@ namespace _4Module.Controllers
             try
             {
                 var createdAuthor = await _authorService.CreateAsync(authorDto);
-                return CreatedAtAction(nameof(GetAuthor), new { id = createdAuthor.Id }, createdAuthor);
+                return StatusCode(201,createdAuthor);
             }
             catch (Exception ex)
             {
