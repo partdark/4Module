@@ -49,6 +49,20 @@ namespace IntegrationTest
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
+
+        [Fact]
+        public async Task PostTestInvalidDto()
+        {
+            var badDto = new
+            {
+                Title = "",
+                Year = 1204,
+                AuthirId = new Guid[] { }
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("/api/Book/books", badDto);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
     }
 
 
