@@ -6,7 +6,7 @@ namespace _4Module.Controllers
 
 
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class TestApllicationController : ControllerBase
     {
         private readonly MySettings _settings;

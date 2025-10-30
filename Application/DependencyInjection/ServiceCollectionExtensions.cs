@@ -21,7 +21,10 @@ namespace Application.DependencyInjection
             services.AddScoped<IProductReviewService, ProductReviewService>();
             services.AddScoped<IAuthorService, AuthorService>();
             services.AddScoped<IValidator<CreateBookDTO>, CreateBookDTOValidator>();
-            
+            services.AddScoped<JwtService>();
+
+
+
 
             return services;
         }

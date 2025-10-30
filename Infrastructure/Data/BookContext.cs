@@ -1,12 +1,14 @@
 ﻿
 
 using Domain.Entitties;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace Infastructure.Data
 {
-    public class BookContext : DbContext
+    public class BookContext : IdentityDbContext<IdentityUser>
     {
         public BookContext(DbContextOptions options) : base(options)
         {
@@ -20,6 +22,7 @@ namespace Infastructure.Data
 
             modelBuilder.Entity<Author>(entity =>
             {
+                base.OnModelCreating(modelBuilder);
                 entity.ToTable("Authors");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
