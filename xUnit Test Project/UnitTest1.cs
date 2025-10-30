@@ -2,9 +2,19 @@ using Application;
 using Applications.Services;
 using Domain.Entitties;
 using Domain.Interfaces;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
+using Microsoft.VisualStudio.TestPlatform.TestHost;
 using Moq;
 using Repository;
+using System.Net;
 using System.Threading.Tasks;
+
+
+
 
 namespace xUnit_Test_Project
 {
