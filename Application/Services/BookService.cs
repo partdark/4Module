@@ -1,7 +1,7 @@
 ﻿
 using Application;
 using Application.DTO;
-
+using Application.Interfaces;
 using Domain.Entitties;
 using Domain.Interfaces;
 
@@ -11,13 +11,14 @@ namespace Applications.Services
     public class BookService : IBookService
     {
         private readonly IBookRepository _bookRepository;
-        private readonly IAuthorRepository _authorRepository;
+        //  private readonly IAuthorRepository _authorRepository; 
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IAuthorHttpService _authorHttpService; 
 
-      public BookService(IBookRepository bookRepository, IAuthorRepository authorRepository, IHttpClientFactory httpClientFactory)
+        public BookService(IBookRepository bookRepository, IAuthorHttpService authorHttpService, IHttpClientFactory httpClientFactory)
         {
             _bookRepository = bookRepository;
-            _authorRepository = authorRepository;
+            _authorHttpService = authorHttpService;
             _httpClientFactory = httpClientFactory;
         }
 
@@ -54,7 +55,7 @@ namespace Applications.Services
         public async Task<BookResponseDTO> CreateAsync(CreateBookDTO dto)
         {
 
-            var authors = await _authorRepository.GetByIdsAsync(dto.AuthorIds);
+            var authors = await _authorHttpService.GetByIdsAsync(dto.AuthorIds);
 
             var book = new Book
             {
@@ -69,7 +70,7 @@ namespace Applications.Services
 
         public async Task<BookResponseDTO?> UpdateAsync(UpdateBookDTO dto)
         {
-            var authors = await _authorRepository.GetByIdsAsync(dto.AuthorIds);
+            var authors = await _authorHttpService.GetByIdsAsync(dto.AuthorIds);
 
             var book = new Book
             {

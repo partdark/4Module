@@ -26,9 +26,11 @@ namespace Application.DependencyInjection
             services.AddHttpClient("TestClient", client =>
             {
                 client.BaseAddress = new Uri("https://petstore.swagger.io/");
-            }
-                );
-
+            });
+            services.AddHttpClient<IAuthorHttpService, AuthorHttpService>(client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:7134/api/Book/");
+            });
 
 
             return services;

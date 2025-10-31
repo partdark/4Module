@@ -82,7 +82,7 @@ namespace _4Module.Controllers
         /// <returns>Return book with your id</returns>
         /// <response code ="200">Succes</response>
         /// /// <response code ="404">Book with your id not found</response>
-        [Authorize]
+       // [Authorize]
         [HttpGet("books/{id:guid}")]
 
         public async Task<ActionResult<BookResponseDTO>> GetBookbyId([FromRoute] Guid id)
@@ -134,7 +134,7 @@ namespace _4Module.Controllers
 
 
         [HttpGet("authors")]
-        [Authorize(Policy = "OlderThan18")]
+       // [Authorize(Policy = "OlderThan18")]
         public async Task<ActionResult<IEnumerable<AuthorResponseDTO>>> GetAuthors()
         {
             var authors = await _authorService.GetAllAsync();
@@ -155,7 +155,7 @@ namespace _4Module.Controllers
 
 
         [HttpPost("authors")]
-        [Authorize]
+        //[Authorize]
         public async Task<ActionResult<AuthorResponseDTO>> CreateAuthor(CreateAuthorDTO authorDto)
         {
             try
@@ -212,7 +212,12 @@ namespace _4Module.Controllers
         {
             return await _reportService.GetAuthorBookCountsAsync();
         }
-
+        [HttpGet("authors/batch")]
+        public async Task<ActionResult<IEnumerable<AuthorResponseDTO>>> GetAuthorsByIds([FromQuery] List<Guid> ids)
+        {
+            var authors = await _authorService.GetByIdsAsync(ids);
+            return Ok(authors);
+        }
     }
 }
 
