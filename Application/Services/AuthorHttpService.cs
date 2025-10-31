@@ -2,6 +2,7 @@
 using Application.Interfaces;
 using Domain.Entitties;
 using Microsoft.AspNetCore.Diagnostics;
+using Polly.CircuitBreaker;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -25,12 +26,19 @@ namespace Application.Services
 
         public async Task<IEnumerable<Author>> GetByIdsAsync(List<Guid> ids)
         {
-            var idsQuery = string.Join("&", ids.Select(x => $"Ids={x}"));
+            try
+            {
+                var idsQuery = string.Join("&", ids.Select(x => $"Ids={x}"));
 
-            var response = await _httpClient.GetAsync($"/api/Book/authors/batch?{idsQuery}");
-            response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<IEnumerable<Author>>(content, _jsonOptions);
+                var response = await _httpClient.GetAsync($"/api/Book/authors/batch?{idsQuery}");
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<IEnumerable<Author>>(content, _jsonOptions);
+            }
+            catch(BrokenCircuitException) {
+                return ids.Select(id => new Author { Id = id,Name =  "Unknown", Bio = "Unknown" });
+            }
+           
         }
         public async Task<AuthorResponseDTO?> GetByIdAsync(Guid id)
         {

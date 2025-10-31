@@ -5,8 +5,10 @@ using Application.Validator;
 using Applications.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Polly;
 using Polly.Extensions.Http;
+using Polly.Fallback;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,3 +43,4 @@ namespace Application.DependencyInjection
         }
     }
 }
+

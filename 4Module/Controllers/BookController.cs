@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
+using System.Net;
 
 
 namespace _4Module.Controllers
@@ -15,23 +16,23 @@ namespace _4Module.Controllers
     /// Base Book Controller
     /// </summary>
     [ApiController]
-    
+
     [Route("api/[controller]")]
 
 
     public class BookController : ControllerBase
     {
-       
+
 
         private readonly IBookService _bookService;
         private readonly IAuthorService _authorService;
         private readonly IAuthorReportService _reportService;
-
+        private readonly IAuthorHttpService _authorHttpService;
         private readonly IProductReviewService _productReview;
         private readonly IDistributedCache _cache;
 
         public BookController(IBookService bookService, IAuthorService authorService, IAuthorReportService reportService
-            , IProductReviewService productReview, IDistributedCache cache)
+            , IProductReviewService productReview, IDistributedCache cache, IAuthorHttpService authorHttpService)
         {
 
             _bookService = bookService;
@@ -39,6 +40,7 @@ namespace _4Module.Controllers
             _reportService = reportService;
             _productReview = productReview;
             _cache = cache;
+            _authorHttpService = authorHttpService;
         }
 
 
@@ -51,7 +53,7 @@ namespace _4Module.Controllers
         /// <response code ="200">Succes</response>
 
         [HttpGet("books")]
-        
+
         public async Task<ActionResult<IEnumerable<BookResponseDTO>>> GetAllBooksAsync()
         {
             var books = await _bookService.GetAllAsync();
@@ -163,7 +165,7 @@ namespace _4Module.Controllers
             try
             {
                 var createdAuthor = await _authorService.CreateAsync(authorDto);
-                return StatusCode(201,createdAuthor);
+                return StatusCode(201, createdAuthor);
             }
             catch (Exception ex)
             {
@@ -215,15 +217,24 @@ namespace _4Module.Controllers
             return await _reportService.GetAuthorBookCountsAsync();
         }
 
-      
+
 
         [HttpGet("authors/batch")]
         public async Task<ActionResult<IEnumerable<AuthorResponseDTO>>> GetAuthorsByIds([FromQuery] List<Guid> ids)
         {
-          
-          
+
             var authors = await _authorService.GetByIdsAsync(ids);
             return Ok(authors);
+        }
+        [HttpGet("test-fallback")]
+        public async Task<IActionResult> TestFallback([FromServices] IAuthorHttpService authorHttpService)
+        {
+
+            var fakeIds = new List<Guid> { Guid.NewGuid() };
+            var authors = await authorHttpService.GetByIdsAsync(fakeIds);
+            return Ok(authors);
+
+
         }
     }
 }

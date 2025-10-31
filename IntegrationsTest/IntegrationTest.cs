@@ -124,6 +124,9 @@ namespace IntegrationTest
             return client;
         }
 
+        
+
+
         [Fact]
         public async Task CircuitBreakerTest()
         {
