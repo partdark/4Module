@@ -12,11 +12,31 @@ namespace Applications.Services
     {
         private readonly IBookRepository _bookRepository;
         private readonly IAuthorRepository _authorRepository;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-      public BookService(IBookRepository bookRepository, IAuthorRepository authorRepository)
+      public BookService(IBookRepository bookRepository, IAuthorRepository authorRepository, IHttpClientFactory httpClientFactory)
         {
             _bookRepository = bookRepository;
             _authorRepository = authorRepository;
+            _httpClientFactory = httpClientFactory;
+        }
+
+        public async Task<string> PublicGet()
+        {
+            var client = _httpClientFactory.CreateClient("TestClient");
+
+            try
+            {
+                var response = await client.GetAsync("v2/store/inventory/");
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+
+                return content;
+            }
+            catch (Exception ex) {
+                throw new Exception($"Ошибка {ex.Message}");
+            }
+            
         }
 
         public async Task<BookResponseDTO?> GetByIdAsync(Guid id)

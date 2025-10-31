@@ -23,6 +23,11 @@ namespace Application.DependencyInjection
             services.AddScoped<IValidator<CreateBookDTO>, CreateBookDTOValidator>();
             services.AddScoped<JwtService>();
 
+            services.AddHttpClient("TestClient", client =>
+            {
+                client.BaseAddress = new Uri("https://petstore.swagger.io/");
+            }
+                );
 
 
 

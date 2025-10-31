@@ -44,15 +44,15 @@ namespace xUnit_Test_Project
     {
         private readonly Mock<IBookRepository> _bookMock;
         private readonly Mock<IAuthorRepository> _authorMock;
+        private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
         private readonly IBookService _bookService;
-
 
         public BookReposotoryTest()
         {
             _bookMock = new Mock<IBookRepository>();
             _authorMock = new Mock<IAuthorRepository>();
-            _bookService = new BookService(_bookMock.Object, _authorMock.Object);
-
+            _httpClientFactoryMock = new Mock<IHttpClientFactory>();
+            _bookService = new BookService(_bookMock.Object, _authorMock.Object, _httpClientFactoryMock.Object);
         }
 
 
