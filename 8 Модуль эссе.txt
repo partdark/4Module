@@ -1,0 +1,39 @@
+Ичерпание сокетов - проблема в .net приложениях, которые использую http коммуникацию. Она возникает, когда приложение исчерпывает все доступные сокеты, что вызывает ошибки unable to connect или socketexception. В основе этой проблемы лежит непонимание работы httpckient-ов и сокетов в .net.
+Анти-паттерн: создание httpclient в using, пример:
+using (var client = new httpclinet){
+var response = await client.getasynct("https://../"); - так НЕ надо
+}
+
+Почему так НЕ надо:
+Не мгновенное освобождение ресурсов: удаление через dispose(обертка using), сокет закрывается, но попадает в состояние time_wait на 4 минуты в windows.
+
+Ограниченное количество сокетов, которые могут находиться в состоянии time_wait.
+
+При частых вызовах сокеты накапливаются, пока не исчерпается их пул.
+
+Как это происходит: создается httpclient -> выполняется запрос -> dispose -> time_wait -> блокировка на 4 минуты
+
+httpclientfactory вводит концепцию управляемого пула httpclient-ов, решая данную проблему.
+
+private readonlye Ihttpclientfactory _httpclientFactory
+
+public Service (Ihttpclientfactory httpclientFactory)
+{
+_httpclientFactory = httpclientFactory;
+}
+
+public async Task GetAsync ()
+{
+var client = _httpclientFactory.CreateClient("Client");
+}
+
+httpclientfactory создают экземпляры httpmessagehandler, что позволяет:
+
+использовать сокеты для нескольких запросов
+
+обновлять соединения
+
+избегать состояния time_wait
+
+
+К проблемам httpclient можно отнести кеширование dns (не магазина), если ip адрес изменится, то httpclient может этого не заменить, а httpclientfactory переодически пересоздает соединения.
