@@ -3,6 +3,7 @@ using Application.Interfaces;
 using Domain.Entitties;
 using Microsoft.AspNetCore.Diagnostics;
 using Polly.CircuitBreaker;
+using Polly.Timeout;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -36,7 +37,11 @@ namespace Application.Services
                 return JsonSerializer.Deserialize<IEnumerable<Author>>(content, _jsonOptions);
             }
             catch(BrokenCircuitException) {
-                return ids.Select(id => new Author { Id = id,Name =  "Unknown", Bio = "Unknown" });
+                return ids.Select(id => new Author { Id = id,Name = "Unknown, BrokenCircuitException", Bio = "Unknown" });
+            }
+            catch (TimeoutRejectedException)
+            {
+                return ids.Select(id => new Author { Id = id, Name = "Unknown, TimeoutRejectedException", Bio = "Unknown" });
             }
            
         }
