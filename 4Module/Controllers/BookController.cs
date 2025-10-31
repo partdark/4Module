@@ -21,7 +21,7 @@ namespace _4Module.Controllers
 
     public class BookController : ControllerBase
     {
-        static int ImitateError503 = 0;
+       
 
         private readonly IBookService _bookService;
         private readonly IAuthorService _authorService;
@@ -136,7 +136,7 @@ namespace _4Module.Controllers
 
 
         [HttpGet("authors")]
-       // [Authorize(Policy = "OlderThan18")]
+        [Authorize(Policy = "OlderThan18")]
         public async Task<ActionResult<IEnumerable<AuthorResponseDTO>>> GetAuthors()
         {
             var authors = await _authorService.GetAllAsync();
@@ -157,7 +157,7 @@ namespace _4Module.Controllers
 
 
         [HttpPost("authors")]
-        //[Authorize]
+        [Authorize]
         public async Task<ActionResult<AuthorResponseDTO>> CreateAuthor(CreateAuthorDTO authorDto)
         {
             try
@@ -215,18 +215,13 @@ namespace _4Module.Controllers
             return await _reportService.GetAuthorBookCountsAsync();
         }
 
-        
+      
 
         [HttpGet("authors/batch")]
         public async Task<ActionResult<IEnumerable<AuthorResponseDTO>>> GetAuthorsByIds([FromQuery] List<Guid> ids)
         {
-            
-            if (ImitateError503 <= 2)
-            {
-                ImitateError503++;
-                return StatusCode(503);
-            }
-            ImitateError503 = 0;
+          
+          
             var authors = await _authorService.GetByIdsAsync(ids);
             return Ok(authors);
         }

@@ -1,4 +1,5 @@
 using Application;
+using Application.Interfaces;
 using Applications.Services;
 using Domain.Entitties;
 using Domain.Interfaces;
@@ -43,14 +44,14 @@ namespace xUnit_Test_Project
     public  class BookReposotoryTest
     {
         private readonly Mock<IBookRepository> _bookMock;
-        private readonly Mock<IAuthorRepository> _authorMock;
+        private readonly Mock<IAuthorHttpService> _authorMock;
         private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
         private readonly IBookService _bookService;
 
         public BookReposotoryTest()
         {
             _bookMock = new Mock<IBookRepository>();
-            _authorMock = new Mock<IAuthorRepository>();
+            _authorMock = new Mock<IAuthorHttpService>();
             _httpClientFactoryMock = new Mock<IHttpClientFactory>();
             _bookService = new BookService(_bookMock.Object, _authorMock.Object, _httpClientFactoryMock.Object);
         }
