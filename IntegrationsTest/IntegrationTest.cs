@@ -1,21 +1,14 @@
 using Application.DTO;
-using Application.Interfaces;
-using Domain.Entitties;
-using Infastructure.Data;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
 using System.Net;
-using System.Security.Claims;
-using System.Text.Encodings.Web;
-using Testcontainers.PostgreSql;
 using Xunit;
+using static IntegrationTest.BookIntegrationTestInMemory;
+using static IntegrationTest.BookIntegrationTestInMemoryCircuitTest;
 
 namespace IntegrationTest
 {
@@ -37,6 +30,7 @@ namespace IntegrationTest
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
+
     }
 
     public class BookIntegrationTestInMemory : IClassFixture<MyTestFactory>
@@ -107,169 +101,56 @@ namespace IntegrationTest
             var response = await _httpClient.PostAsJsonAsync("/api/Book/authors", validDto);
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         }
-    }
-    public class MockAuthorHttpService : IAuthorHttpService
-    {
-        public Task<IEnumerable<Author>> GetByIdsAsync(List<Guid> ids)
-        {
-            var authors = ids.Select(id => new Author { Id = id, Name = "Mock Author", Bio = "Mock Bio" });
-            return Task.FromResult(authors);
-        }
 
-        public Task<AuthorResponseDTO?> GetByIdAsync(Guid id) => throw new NotImplementedException();
-        public Task<IEnumerable<AuthorResponseDTO>> GetAllAsync() => throw new NotImplementedException();
-        public Task<AuthorResponseDTO> CreateAsync(CreateAuthorDTO dto) => throw new NotImplementedException();
-        public Task<AuthorResponseDTO?> UpdateAsync(UpdateAuthorDTO dto) => throw new NotImplementedException();
-        public Task<bool> DeleteAsync(Guid id) => throw new NotImplementedException();
+
     }
 
-
-    public class MyTestFactory : WebApplicationFactory<Program>
+    public class BookIntegrationTestInMemoryCircuitTest : IClassFixture<MyTestFactoryCircuitTest>
     {
-        protected override IHost CreateHost(IHostBuilder builder)
+        private readonly MyTestFactoryCircuitTest _factory;
+        private readonly HttpClient _httpClient;
+
+        public BookIntegrationTestInMemoryCircuitTest(MyTestFactoryCircuitTest factory)
         {
-            builder.ConfigureServices(services =>
+            _factory = factory;
+            _httpClient = _factory.CreateClient();
+        }
+
+        private HttpClient CreateClientWithAuth()
+        {
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "fake-jwt-token");
+            return client;
+        }
+
+        [Fact]
+        public async Task CircuitBreakerTest()
+        {
+
+            var client = CreateClientWithAuth();
+            var validDto = new CreateBookDTO(1952, new List<Guid> { Guid.NewGuid() }, "test title");
+
+
+            for (int i = 1; i <= 6; i++)
             {
+                var response = await client.PostAsJsonAsync("/api/Book/books", validDto);
+                Console.WriteLine($"Request {i}: {response.StatusCode}");
 
-                var authServices = services.Where(s =>
-                s.ServiceType.FullName.Contains("Authentication") ||
-                s.ServiceType == typeof(IAuthenticationService) ||
-                s.ServiceType == typeof(IAuthenticationSchemeProvider) ||
-                s.ServiceType.Name.Contains("JwtBearer") ||
-                s.ServiceType.Name.Contains("AuthenticationOptions"))
-                .ToList();
-
-                foreach (var service in authServices)
+                if (i <= 3)
                 {
-                    services.Remove(service);
+                    Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                 }
-
-
-                services.AddAuthentication("Bearer")
-                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Bearer", options => { });
-                var httpServiceDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IAuthorHttpService));
-                if (httpServiceDescriptor != null)
+                else if (i <= 5)
                 {
-                    services.Remove(httpServiceDescriptor);
+
+                    Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                 }
-
-                services.AddScoped<IAuthorHttpService, MockAuthorHttpService>();
-
-
-                var descriptors = services
-                    .Where(d => d.ServiceType.Name.Contains("DbContext") ||
-                               d.ServiceType == typeof(DbContextOptions<BookContext>) ||
-                               d.ServiceType == typeof(BookContext))
-                    .ToList();
-
-                foreach (var descriptor in descriptors)
+                else
                 {
-                    services.Remove(descriptor);
+                    await Task.Delay(1000);
                 }
-
-                services.AddDbContext<BookContext>(options =>
-                {
-                    options.UseInMemoryDatabase("DbTest");
-                }, ServiceLifetime.Scoped);
-            });
-
-            var host = base.CreateHost(builder);
-            InitializeDatabase(host);
-            return host;
-        }
-
-        private void InitializeDatabase(IHost host)
-        {
-            using var scope = host.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<BookContext>();
-
-            db.Database.EnsureDeleted();
-            db.Database.EnsureCreated();
-            InitializeDbForTests(db);
-        }
-
-        private void InitializeDbForTests(BookContext db)
-        {
-            db.Books.RemoveRange(db.Books);
-            db.Authors.RemoveRange(db.Authors);
-            db.SaveChanges();
-
-            var author1 = new Author
-            {
-                Id = Guid.NewGuid(),
-                Name = "Test Author 1",
-                Bio = "Bio for Author 1"
-            };
-
-            var author2 = new Author
-            {
-                Id = Guid.NewGuid(),
-                Name = "Test Author 2",
-                Bio = "Bio for Author 2"
-            };
-
-            var book1 = new Book
-            {
-                Id = Guid.NewGuid(),
-                Title = "Test Book 1",
-                Year = 2020,
-                Authors = new List<Author> { author1, author2 }
-            };
-
-            var book2 = new Book
-            {
-                Id = Guid.NewGuid(),
-                Title = "Test Book 2",
-                Year = 2021,
-                Authors = new List<Author> { author1 }
-            };
-
-            var book3 = new Book
-            {
-                Id = Guid.NewGuid(),
-                Title = "Test Book 3",
-                Year = 2022,
-                Authors = new List<Author> { author2 }
-            };
-
-            db.Authors.AddRange(author1, author2);
-            db.Books.AddRange(book1, book2, book3);
-            db.SaveChanges();
-        }
-    }
-    public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
-    {
-        public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options,
-            ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
-            : base(options, logger, encoder, clock)
-        {
-        }
-
-        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
-        {
-            if (!Request.Headers.ContainsKey("Authorization"))
-            {
-                return Task.FromResult(AuthenticateResult.Fail("Missing Authorization header"));
             }
-
-            var authHeader = Request.Headers["Authorization"].ToString();
-
-            if (authHeader.StartsWith("Bearer"))
-            {
-                var claims = new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, "test-user-id"),
-                    new Claim(ClaimTypes.Name, "testuser@example.com"),
-                    new Claim(ClaimTypes.Role, "User")
-                };
-                var identity = new ClaimsIdentity(claims, "Bearer");
-                var principal = new ClaimsPrincipal(identity);
-                var ticket = new AuthenticationTicket(principal, "Bearer");
-
-                return Task.FromResult(AuthenticateResult.Success(ticket));
-            }
-
-            return Task.FromResult(AuthenticateResult.Fail("Invalid scheme"));
         }
     }
 
@@ -311,137 +192,5 @@ namespace IntegrationTest
 
         }
     }
-    public class PostgresTestFactory : WebApplicationFactory<Program>, IAsyncLifetime
-    {
-        private PostgreSqlContainer _postgresContainer;
-
-
-        async Task IAsyncLifetime.InitializeAsync()
-        {
-            _postgresContainer = new PostgreSqlBuilder()
-                 .WithDatabase("testdb")
-                 .WithUsername("testuser")
-                 .WithPassword("testpassword")
-                 .Build();
-            await _postgresContainer.StartAsync();
-        }
-
-        async Task IAsyncLifetime.DisposeAsync()
-        {
-            if (_postgresContainer != null)
-            {
-                await _postgresContainer.DisposeAsync();
-            }
-        }
-
-
-        protected override IHost CreateHost(IHostBuilder builder)
-        {
-            builder.ConfigureServices(services =>
-            {
-
-                var authServices = services.Where(s =>
-                s.ServiceType.FullName.Contains("Authentication") ||
-                s.ServiceType == typeof(IAuthenticationService) ||
-                s.ServiceType == typeof(IAuthenticationSchemeProvider) ||
-                s.ServiceType.Name.Contains("JwtBearer") ||
-                s.ServiceType.Name.Contains("AuthenticationOptions"))
-                .ToList();
-
-                foreach (var service in authServices)
-                {
-                    services.Remove(service);
-                }
-
-
-                services.AddAuthentication("Bearer")
-                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Bearer", options => { });
-
-
-
-                var descriptors = services
-                    .Where(d => d.ServiceType.Name.Contains("DbContext") ||
-                               d.ServiceType == typeof(DbContextOptions<BookContext>) ||
-                               d.ServiceType == typeof(BookContext))
-                    .ToList();
-
-                foreach (var descriptor in descriptors)
-                {
-                    services.Remove(descriptor);
-                }
-
-                services.AddDbContext<BookContext>(options =>
-                {
-                    options.UseNpgsql(_postgresContainer.GetConnectionString());
-                }, ServiceLifetime.Scoped);
-
-            });
-
-            var host = base.CreateHost(builder);
-            InitializeDatabase(host);
-            return host;
-        }
-
-
-        private void InitializeDatabase(IHost host)
-        {
-            using var scope = host.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<BookContext>();
-
-            db.Database.EnsureDeleted();
-            db.Database.EnsureCreated();
-            InitializeDbForTests(db);
-        }
-
-        private void InitializeDbForTests(BookContext db)
-        {
-            db.Books.RemoveRange(db.Books);
-            db.Authors.RemoveRange(db.Authors);
-            db.SaveChanges();
-
-            var author1 = new Author
-            {
-                Id = Guid.NewGuid(),
-                Name = "Test Author 1",
-                Bio = "Bio for Author 1"
-            };
-
-            var author2 = new Author
-            {
-                Id = Guid.NewGuid(),
-                Name = "Test Author 2",
-                Bio = "Bio for Author 2"
-            };
-
-            var book1 = new Book
-            {
-                Id = Guid.NewGuid(),
-                Title = "Test Book 1",
-                Year = 2020,
-                Authors = new List<Author> { author1, author2 }
-            };
-
-            var book2 = new Book
-            {
-                Id = Guid.NewGuid(),
-                Title = "Test Book 2",
-                Year = 2021,
-                Authors = new List<Author> { author1 }
-            };
-
-            var book3 = new Book
-            {
-                Id = Guid.NewGuid(),
-                Title = "Test Book 3",
-                Year = 2022,
-                Authors = new List<Author> { author2 }
-            };
-
-            db.Authors.AddRange(author1, author2);
-            db.Books.AddRange(book1, book2, book3);
-            db.SaveChanges();
-        }
-
-
-    }
 }
+

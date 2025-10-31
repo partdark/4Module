@@ -1,6 +1,7 @@
 ﻿using Application.DTO;
 using Application.Interfaces;
 using Domain.Entitties;
+using Microsoft.AspNetCore.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -13,11 +14,14 @@ namespace Application.Services
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonOptions;
 
+
         public AuthorHttpService(HttpClient httpClient)
         {
             _httpClient = httpClient;
             _jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         }
+
+      
 
         public async Task<IEnumerable<Author>> GetByIdsAsync(List<Guid> ids)
         {

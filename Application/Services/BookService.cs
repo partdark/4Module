@@ -22,6 +22,8 @@ namespace Applications.Services
             _httpClientFactory = httpClientFactory;
         }
 
+
+
         public async Task<string> PublicGet()
         {
             var client = _httpClientFactory.CreateClient("TestClient");
