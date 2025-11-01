@@ -1,7 +1,7 @@
 ﻿
 using Application.DTO;
 using Dapper;
-using Infastructure.Data;
+using Infrastructure.Data;
 using Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

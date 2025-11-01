@@ -17,6 +17,12 @@ namespace Applications.Services
             _authorRepository = authorRepository;
         }
 
+        public async Task<IEnumerable<AuthorResponseDTO>> GetByIdsAsync(List<Guid> ids)
+        {
+            var authors = await _authorRepository.GetByIdsAsync(ids);
+            return authors.Select(MapToDto);
+        }
+
         public async Task<AuthorResponseDTO?> GetByIdAsync(Guid id)
         {
             var author = await _authorRepository.GetByIdAsync(id);

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace Infastructure.Data
+namespace Infrastructure.Data
 {
     public class BookContext : IdentityDbContext<IdentityUser>
     {

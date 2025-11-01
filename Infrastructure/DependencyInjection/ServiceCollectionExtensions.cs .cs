@@ -1,6 +1,6 @@
 ﻿
 using Domain.Interfaces;
-using Infastructure.Data;
+using Infrastructure.Data;
 using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;

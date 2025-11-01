@@ -11,6 +11,7 @@ namespace Application
         Task<IEnumerable<AuthorResponseDTO>> GetAllAsync();
         Task<AuthorResponseDTO?> GetByIdAsync(Guid id);
         Task<AuthorResponseDTO?> UpdateAsync(UpdateAuthorDTO authorDto);
+        Task<IEnumerable<AuthorResponseDTO>> GetByIdsAsync(List<Guid> ids);
 
        // Task<IEnumerable<AuthorBookCountDTO>> GetAuthorBookCountsAsync(); перенесен в iauthorreportsevice
 

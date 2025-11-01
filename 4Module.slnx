@@ -1,10 +1,13 @@
 <Solution>
   <Folder Name="/Элементы решения/">
-    <File Path="Эссе.txt" />
+    <File Path="6 Модуль эссе.txt" />
+    <File Path="8 Модуль эссе.txt" />
   </Folder>
   <Project Path="4Module/4Module.csproj" />
   <Project Path="Application/Application.csproj" Id="6d6a2d1a-458a-46f3-90f9-dd8dd1050a1a" />
   <Project Path="Domain/Domain.csproj" Id="f85fbf1e-7627-4c84-98fb-7652803dc7cf" />
+  <Project Path="GrpcAuthorsService/GrpcAuthorsService.csproj" Id="37a41e4d-592e-4ac1-bf65-24b2491fb9a4" />
+  <Project Path="GrpcBooksService/GrpcBooksService.csproj" Id="9978fb1f-86c9-4931-836d-f7f196f8b0b6" />
   <Project Path="Infrastructure/Infrastructure.csproj" Id="0eb61c6a-1b63-4036-9845-74522efd8682" />
   <Project Path="IntegrationsTest/IntegrationsTest.csproj" Id="52298b1c-325a-4aec-b429-73d2c8000d1a" />
   <Project Path="xUnit Test Project/xUnit Test Project.csproj" Id="7004bc2f-22fd-44f5-aa44-eb155c6d5b44" />

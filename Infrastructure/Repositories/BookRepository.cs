@@ -1,10 +1,11 @@
-﻿using Domain.Interfaces;
-using Domain.Entitties;
-using Infastructure.Data;
+﻿using Domain.Entitties;
+using Domain.Interfaces;
+using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Repository
 {
@@ -38,8 +39,9 @@ namespace Repository
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
                 };
-                await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(book), options);
-                   
+                var jsonOptions = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.IgnoreCycles };
+                await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(book, jsonOptions), options);
+
             }
             return book;
         }

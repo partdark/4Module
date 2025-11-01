@@ -18,5 +18,7 @@ namespace Application
         Task<BookResponseDTO?> UpdateAsync(UpdateBookDTO bookDto);
 
         Task<bool> CreateBookWithAuthorAsync(CreateBookWithAuthorDTO dto);
+
+        Task<string> PublicGet();
     }
 }
