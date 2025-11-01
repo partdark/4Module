@@ -1,0 +1,24 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "BookGrpc.Contracts";
+
+service BookService {
+  rpc GetBook (GetBookRequest) returns (BookResponse);
+  rpc CreateBook (CreateBookRequest) returns (BookResponse);
+}
+
+message GetBookRequest {
+  string id = 1;
+}
+
+message CreateBookRequest {
+  int32 year = 1;
+  repeated string author_ids = 2;
+  string title = 3;
+}
+
+message BookResponse {
+  string id = 1;
+  int32 year = 2;
+  string title = 3;
+}

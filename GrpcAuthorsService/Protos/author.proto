@@ -1,0 +1,42 @@
+﻿syntax = "proto3";
+option csharp_namespace = "AuthorGrpc.Contracts";
+
+service AuthorService {
+  rpc GetAuthor (GetAuthorRequest) returns (AuthorResponse);
+  rpc GetAllAuthors (GetAllAuthorsRequest) returns (GetAllAuthorsResponse);
+  rpc CreateAuthor (CreateAuthorRequest) returns (AuthorResponse);
+  rpc GetAuthorsByIds (GetAuthorsByIdsRequest) returns (GetAllAuthorsResponse);
+}
+
+message GetAuthorRequest {
+  string id = 1;
+}
+
+message GetAllAuthorsRequest {
+}
+
+message CreateAuthorRequest {
+  string name = 1;
+  string bio = 2;
+}
+
+message GetAuthorsByIdsRequest {
+  repeated string ids = 1;
+}
+
+message AuthorResponse {
+  string id = 1;
+  string name = 2;
+  string bio = 3;
+  repeated BookInfo books = 4;
+}
+
+message GetAllAuthorsResponse {
+  repeated AuthorResponse authors = 1;
+}
+
+message BookInfo {
+  string id = 1;
+  string title = 2;
+  int32 year = 3;
+}
