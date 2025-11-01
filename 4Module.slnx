@@ -6,4 +6,6 @@
   <Project Path="Application/Application.csproj" Id="6d6a2d1a-458a-46f3-90f9-dd8dd1050a1a" />
   <Project Path="Domain/Domain.csproj" Id="f85fbf1e-7627-4c84-98fb-7652803dc7cf" />
   <Project Path="Infrastructure/Infrastructure.csproj" Id="0eb61c6a-1b63-4036-9845-74522efd8682" />
+  <Project Path="IntegrationsTest/IntegrationsTest.csproj" Id="52298b1c-325a-4aec-b429-73d2c8000d1a" />
+  <Project Path="xUnit Test Project/xUnit Test Project.csproj" Id="7004bc2f-22fd-44f5-aa44-eb155c6d5b44" />
 </Solution>
