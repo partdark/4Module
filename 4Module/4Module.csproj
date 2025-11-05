@@ -35,6 +35,7 @@
     <ProjectReference Include="..\GrpcAuthorsService\GrpcAuthorsService.csproj" />
     <ProjectReference Include="..\GrpcBooksService\GrpcBooksService.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\OrderContracts\OrderContracts.csproj" />
   </ItemGroup>
 
 </Project>
