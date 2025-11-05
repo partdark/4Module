@@ -32,6 +32,7 @@ namespace OrderWorkerService
             };
 
             _dbContext.Orders.Add(order);
+           
             await _dbContext.SaveChangesAsync();
 
            

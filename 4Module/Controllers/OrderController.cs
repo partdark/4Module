@@ -35,6 +35,7 @@ namespace _4Module.Controllers
 
         public async Task<IActionResult> Publish([FromBody] SubmitOrderCommand submitOrderCommand)
         {
+       
             await _bus.Publish(submitOrderCommand);
             return Accepted();
 
