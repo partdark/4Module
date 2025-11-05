@@ -1,4 +1,6 @@
 ﻿
+
+
 using _4Module;
 using Application.DependencyInjection;
 using Application.Settings;
@@ -7,23 +9,16 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure.DependencyInjection;
 using MassTransit;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.DataProtection.Repositories;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using OrderWorkerService_;
-using System;
+using OrderWorkerService;
+using OrderWorkerService.Data;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
-
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +32,7 @@ builder.Services.Configure<MySettings>(builder.Configuration.GetSection("MySetti
 // Add services to the container.
 builder.Services.AddMassTransit(x =>
 {
-      x.AddConsumer<SubmitOrderConsumer>();
+    x.AddConsumer<SubmitOrderConsumer>();
     //  x.AddConsumer<>();
 
     x.UsingRabbitMq((context, cfg) =>
@@ -51,6 +46,12 @@ builder.Services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
 });
+
+builder.Services.AddDbContext<OrderContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+
 
 builder.Services.AddHealthChecks();
 builder.Services.AddScoped<JwtService>();
@@ -181,7 +182,13 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 
 
+
 var app = builder.Build();
+
+
+
+
+
 app.UseExceptionHandler(exceptionHandlerApp =>
 {
     exceptionHandlerApp.Run(async context =>
@@ -224,11 +231,14 @@ app.Use(async (context, next) =>
 
 
 
-
 // Configure the HTTP request pipeline.
 
 
-
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<OrderContext>();
+    await context.Database.EnsureCreatedAsync();
+}
 
 
 app.UseSwagger();
