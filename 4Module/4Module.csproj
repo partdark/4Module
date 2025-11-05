@@ -35,6 +35,8 @@
     <ProjectReference Include="..\GrpcAuthorsService\GrpcAuthorsService.csproj" />
     <ProjectReference Include="..\GrpcBooksService\GrpcBooksService.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\InventoryService\InventoryService.csproj" />
+    <ProjectReference Include="..\NotificationService\NotificationService.csproj" />
     <ProjectReference Include="..\OrderContracts\OrderContracts.csproj" />
     <ProjectReference Include="..\OrderWorkerService\OrderWorkerService.csproj" />
    

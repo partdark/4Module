@@ -8,10 +8,13 @@ namespace OrderWorkerService
     public class SubmitOrderConsumer : IConsumer<SubmitOrderCommand>
     {
         private readonly OrderContext _dbContext;
+        private readonly IBus _bus;
 
-        public SubmitOrderConsumer(OrderContext dbContext)
+        public SubmitOrderConsumer(OrderContext dbContext, IBus bus)
         {
             _dbContext = dbContext;
+            _bus = bus;
+
         }
 
         public async Task Consume(ConsumeContext<SubmitOrderCommand> context)
@@ -35,7 +38,9 @@ namespace OrderWorkerService
            
             await _dbContext.SaveChangesAsync();
 
-           
+            await _bus.Publish(new OrderCreatedEvent(order.Id, order.CreatedAt, command.Items));
+
+
         }
     }
 }

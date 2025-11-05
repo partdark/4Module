@@ -8,11 +8,13 @@ using Applications.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure.DependencyInjection;
+using InventoryService;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using NotificationService;
 using OrderWorkerService;
 using OrderWorkerService.Data;
 using System.Diagnostics;
@@ -33,6 +35,9 @@ builder.Services.Configure<MySettings>(builder.Configuration.GetSection("MySetti
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<SubmitOrderConsumer>();
+    x.AddConsumer<NotificationServiceConsumer>();
+    x.AddConsumer<InventoryServiceConsumer>();
+
     //  x.AddConsumer<>();
 
     x.UsingRabbitMq((context, cfg) =>

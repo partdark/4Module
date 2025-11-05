@@ -6,4 +6,6 @@
     {
         public Guid ProductId { get; set; }
     }
+
+    public record OrderCreatedEvent(Guid OrderId, DateTime CreatedAt, List<LineItem> Items);
 }
