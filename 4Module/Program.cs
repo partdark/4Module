@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OrderWorkerService_;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -36,7 +37,7 @@ builder.Services.Configure<MySettings>(builder.Configuration.GetSection("MySetti
 // Add services to the container.
 builder.Services.AddMassTransit(x =>
 {
-    //  x.AddConsumer<>();
+      x.AddConsumer<SubmitOrderConsumer>();
     //  x.AddConsumer<>();
 
     x.UsingRabbitMq((context, cfg) =>
