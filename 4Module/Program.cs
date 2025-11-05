@@ -6,6 +6,7 @@ using Applications.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure.DependencyInjection;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection.Repositories;
@@ -33,7 +34,22 @@ builder.Services.Configure<MySettings>(builder.Configuration.GetSection("MySetti
 
 
 // Add services to the container.
+builder.Services.AddMassTransit(x =>
+{
+    //  x.AddConsumer<>();
+    //  x.AddConsumer<>();
 
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", 5672, "/", h =>
+        {
+            h.Username("admin");
+            h.Password("admin");
+        });
+        cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+        cfg.ConfigureEndpoints(context);
+    });
+});
 
 builder.Services.AddHealthChecks();
 builder.Services.AddScoped<JwtService>();
@@ -192,7 +208,7 @@ app.UseExceptionHandler(exceptionHandlerApp =>
 
 app.Use(async (context, next) =>
 {
-  
+
     var startTime = DateTime.UtcNow;
     var stopwatch = Stopwatch.StartNew();
     Console.WriteLine($"Start {context.Request.Method}{context.Request.Path} time - {startTime}");
