@@ -2,7 +2,7 @@
 
 using Domain.Entitties;
 using Domain.Interfaces;
-using Infastructure.Data;
+using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Repository

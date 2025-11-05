@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Application;
+using Domain.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
 namespace _4Module.Controllers
 {
@@ -10,10 +13,12 @@ namespace _4Module.Controllers
     public class TestApllicationController : ControllerBase
     {
         private readonly MySettings _settings;
+        private readonly IBookService _bookRepository;
 
-        public TestApllicationController(IOptions<MySettings> setting)
+        public TestApllicationController(IOptions<MySettings> setting, IBookService bookRepository)
         {
             _settings = setting.Value;
+            _bookRepository = bookRepository;
         }
         /// <summary>
         /// Get setting from MySettings
@@ -42,5 +47,15 @@ namespace _4Module.Controllers
             throw new InvalidOperationException();
         }
 
+
+        [HttpGet("PublicGetHttpClinet")]
+        public async Task<IActionResult> PublicGet()
+        {
+            var result =  await _bookRepository.PublicGet();
+
+            return Ok(result);
+        }
+
+       
     }
 }

@@ -5,6 +5,10 @@ using Application.Validator;
 using Applications.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using Polly;
+using Polly.Extensions.Http;
+using Polly.Fallback;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,10 +27,21 @@ namespace Application.DependencyInjection
             services.AddScoped<IValidator<CreateBookDTO>, CreateBookDTOValidator>();
             services.AddScoped<JwtService>();
 
-
+            services.AddHttpClient("TestClient", client =>
+            {
+                client.BaseAddress = new Uri("https://petstore.swagger.io/");
+            });
+            services.AddHttpClient<IAuthorHttpService, AuthorHttpService>(client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:7134/api/Book/");
+            }).AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(3)))
+                .AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(3, _ => TimeSpan.FromSeconds(1)))
+            .AddPolicyHandler(HttpPolicyExtensions.HandleTransientHttpError()
+    .CircuitBreakerAsync(5, TimeSpan.FromSeconds(2))); 
 
 
             return services;
         }
     }
 }
+
