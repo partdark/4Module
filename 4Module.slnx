@@ -2,6 +2,7 @@
   <Folder Name="/Элементы решения/">
     <File Path="6 Модуль эссе.txt" />
     <File Path="8 Модуль эссе.txt" />
+    <File Path="9 Модуль эссе.txt" />
   </Folder>
   <Project Path="4Module/4Module.csproj" />
   <Project Path="Application/Application.csproj" Id="6d6a2d1a-458a-46f3-90f9-dd8dd1050a1a" />
