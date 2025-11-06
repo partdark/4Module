@@ -48,6 +48,7 @@ namespace Applications.Services
         public async Task<BookResponseDTO?> GetByIdAsync(Guid id)
         {
             var book = await _bookRepository.GetByIdAsync(id);
+            await _analiticsService.SendEventAsync("books-views", book.Id.ToString(), $"New view to book {book.Title.ToString()}" );
             return book != null ? MapToDto(book) : null;
         }
 
@@ -70,7 +71,7 @@ namespace Applications.Services
             };
 
             var created = await _bookRepository.CreateAsync(book);
-            await _analiticsService.SendEventAsync("book-event", created.Id.ToString(), $"New book created: {created.Title.ToString()}");
+            await _analiticsService.SendEventAsync("book-create", created.Id.ToString(), $"New book created: {created.Title.ToString()}");
             return MapToDto(created);
         }
 
