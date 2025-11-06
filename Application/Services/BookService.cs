@@ -8,18 +8,21 @@ using Domain.Interfaces;
 
 namespace Applications.Services
 {
+
     public class BookService : IBookService
     {
         private readonly IBookRepository _bookRepository;
         //  private readonly IAuthorRepository _authorRepository; 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IAuthorHttpService _authorHttpService; 
+        private readonly IAnaliticsService _analiticsService;
 
-        public BookService(IBookRepository bookRepository, IAuthorHttpService authorHttpService, IHttpClientFactory httpClientFactory)
+        public BookService(IBookRepository bookRepository, IAuthorHttpService authorHttpService, IHttpClientFactory httpClientFactory, IAnaliticsService analiticsService)
         {
             _bookRepository = bookRepository;
             _authorHttpService = authorHttpService;
             _httpClientFactory = httpClientFactory;
+            _analiticsService = analiticsService;
         }
 
 
@@ -67,6 +70,7 @@ namespace Applications.Services
             };
 
             var created = await _bookRepository.CreateAsync(book);
+            await _analiticsService.SendEventAsync("book-event", created.Id.ToString(), $"New book created: {created.Title.ToString()}");
             return MapToDto(created);
         }
 
