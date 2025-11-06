@@ -1,4 +1,6 @@
 ﻿
+
+
 using _4Module;
 using Application.DependencyInjection;
 using Application.Settings;
@@ -6,22 +8,19 @@ using Applications.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure.DependencyInjection;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using InventoryService;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.DataProtection.Repositories;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System;
+using NotificationService;
+using OrderWorkerService;
+using OrderWorkerService.Data;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
-
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +32,30 @@ builder.Services.Configure<MySettings>(builder.Configuration.GetSection("MySetti
 
 
 // Add services to the container.
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<SubmitOrderConsumer>();
+    x.AddConsumer<NotificationServiceConsumer>();
+    x.AddConsumer<InventoryServiceConsumer>();
+
+    //  x.AddConsumer<>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", 5672, "/", h =>
+        {
+            h.Username("admin");
+            h.Password("admin");
+        });
+        cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+        cfg.ConfigureEndpoints(context);
+    });
+});
+
+builder.Services.AddDbContext<OrderContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
 
 
 builder.Services.AddHealthChecks();
@@ -164,7 +187,13 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 
 
+
 var app = builder.Build();
+
+
+
+
+
 app.UseExceptionHandler(exceptionHandlerApp =>
 {
     exceptionHandlerApp.Run(async context =>
@@ -192,7 +221,7 @@ app.UseExceptionHandler(exceptionHandlerApp =>
 
 app.Use(async (context, next) =>
 {
-  
+
     var startTime = DateTime.UtcNow;
     var stopwatch = Stopwatch.StartNew();
     Console.WriteLine($"Start {context.Request.Method}{context.Request.Path} time - {startTime}");
@@ -207,11 +236,14 @@ app.Use(async (context, next) =>
 
 
 
-
 // Configure the HTTP request pipeline.
 
 
-
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<OrderContext>();
+    await context.Database.EnsureCreatedAsync();
+}
 
 
 app.UseSwagger();

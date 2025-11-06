@@ -2,6 +2,7 @@
   <Folder Name="/Элементы решения/">
     <File Path="6 Модуль эссе.txt" />
     <File Path="8 Модуль эссе.txt" />
+    <File Path="9 Модуль эссе.txt" />
   </Folder>
   <Project Path="4Module/4Module.csproj" />
   <Project Path="Application/Application.csproj" Id="6d6a2d1a-458a-46f3-90f9-dd8dd1050a1a" />
@@ -10,5 +11,9 @@
   <Project Path="GrpcBooksService/GrpcBooksService.csproj" Id="9978fb1f-86c9-4931-836d-f7f196f8b0b6" />
   <Project Path="Infrastructure/Infrastructure.csproj" Id="0eb61c6a-1b63-4036-9845-74522efd8682" />
   <Project Path="IntegrationsTest/IntegrationsTest.csproj" Id="52298b1c-325a-4aec-b429-73d2c8000d1a" />
+  <Project Path="InventoryService/InventoryService.csproj" Id="a54bf546-0c30-4757-9efc-257ad3a3a598" />
+  <Project Path="NotificationService/NotificationService.csproj" Id="e8cacf24-248e-41f9-a3df-5f54f34eebdb" />
+  <Project Path="OrderContracts/OrderContracts.csproj" Id="06296009-7062-44bc-9ccb-6dd6efea08d6" />
+  <Project Path="OrderWorkerService/OrderWorkerService.csproj" Id="69dd4e0d-9c83-431d-9dd5-73ff14ba97b9" />
   <Project Path="xUnit Test Project/xUnit Test Project.csproj" Id="7004bc2f-22fd-44f5-aa44-eb155c6d5b44" />
 </Solution>

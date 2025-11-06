@@ -12,6 +12,19 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped  
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672" 
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/mnesia
+
+
 
   redis:
     image: redis:7-alpine
@@ -37,3 +50,4 @@ volumes:
   postgres_data:
   redis_data:
   mongodb_data:
+  rabbitmq_data:

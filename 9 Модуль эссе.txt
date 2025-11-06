@@ -1,0 +1,64 @@
+Saga Pattern - архитектурный подход для управления распределенными тразакциями в микросервисной архитектуре, saga разбивает длительную бизнер операцию на последовательность локальных транзакций, каждая из которых обновляет данные в одном сервисе и публикует событие длязапуска следующего шага.
+
+Saga – это долгоживущая транзакция, управляемая координатором. Саги инициируются событием, саги организуют события, и саги поддерживают состояние всей транзакции. Саги предназначены для управления сложностью распределенных транзакций без блокировки и немедленной согласованности. Они управляют состоянием и отслеживают любые компенсации, необходимые в случае частичного сбоя.
+
+Процесс оформления заказа включает несколько этапов: Создание -> Резервирование заказа на 15 минут -> ожидание оплаты -> офомрление или отклонение заказа, которые 
+должна моделировать OrderSaga
+
+public class OrderSagaState : SagaStateMachineInstance
+{
+    public Guid Id { get; set; }
+    ...
+
+    public string? CurrentState { get; set; }
+
+    public DateTime TimeExpired   { get; set; }
+}
+
+Нужно определить события 
+
+OrderCumbitted - инициализация резервирования
+
+SeatReserved - успешное резервирование, ожидание оплаты
+
+PaymentRecieved - принятие оплаты, успешное завершение
+
+ReservationExpired - окончание времени резервирования
+
+
+public class OrderSaga : MassTransitStateMachine<OrderSagaState>
+{
+    public State Reserved { get; private set; }
+    public State PaymentPending { get; private set; }
+    public State Completed { get; private set; }
+    public State Cancelled { get; private set; }
+
+    public Event<OrderSubmitted> OrderSubmitted { get; private set; }
+    public Event<PaymentReceived> PaymentReceived { get; private set; }
+    public Schedule<OrderSagaState, TimeExpired> ReservationTimeout { get; private set; }
+
+}
+
+Для удерживания рещерва в течение 15 минут стоит использовать встроенный механизм планировщика
+
+Initially(
+    When(OrderSubmitted)
+        .Then(context => {
+            context.Instance.OrderId = context.Data.OrderId;
+            context.Instance.TimeExpired = DateTime.UtcNow.AddMinutes(15);
+        })
+        
+        .Schedule(ReservationTimeout, context => new ReservationExpired(context.Instance.CorrelationId))
+        .TransitionTo(Reserved)
+);
+
+Когда заказ переход в состояние Reserved,  мы ожидаем успешную оплату или истечение времени
+
+During(Reserved,
+    When(PaymentReceived)
+        .Unschedule(ReservationTimeout)
+        .TransitionTo(Completed),
+    
+    When(ReservationTimeout.Received)
+        .TransitionTo(Cancelled)
+);

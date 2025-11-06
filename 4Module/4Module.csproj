@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
    <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -17,6 +17,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.5" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.21" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -34,6 +35,11 @@
     <ProjectReference Include="..\GrpcAuthorsService\GrpcAuthorsService.csproj" />
     <ProjectReference Include="..\GrpcBooksService\GrpcBooksService.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\InventoryService\InventoryService.csproj" />
+    <ProjectReference Include="..\NotificationService\NotificationService.csproj" />
+    <ProjectReference Include="..\OrderContracts\OrderContracts.csproj" />
+    <ProjectReference Include="..\OrderWorkerService\OrderWorkerService.csproj" />
+   
   </ItemGroup>
 
 </Project>
