@@ -35,6 +35,8 @@ namespace AnalyticsWorker
                     BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS") ?? "localhost:9092",
                     GroupId = "analitics-group",
                     AutoOffsetReset = AutoOffsetReset.Earliest,
+                    EnableAutoOffsetStore = false,
+                    EnableAutoCommit = false,
                 };
                 _consumer = new ConsumerBuilder<string, string>(config).Build();
 
@@ -57,9 +59,11 @@ namespace AnalyticsWorker
                                 Key = result.Message.Key,
                                 Message = result.Message.Value
                             };
+                            await _collection.InsertOneAsync(bookEvent, cancellationToken: stoppingToken);
+                            _consumer.StoreOffset(result);
 
                             _logger.LogInformation($"New view {result.Message.Key} - {result.Message.Value}");
-                            await _collection.InsertOneAsync(bookEvent, cancellationToken: stoppingToken);
+                           
                         }
                     }
                     catch (ConsumeException ex)
