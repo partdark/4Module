@@ -4,11 +4,12 @@ using Application.DTO;
 using Application.Interfaces;
 using Domain.Entitties;
 using Domain.Interfaces;
+using Microsoft.Extensions.Hosting;
 
 
 namespace Applications.Services
 {
-
+   
     public class BookService : IBookService
     {
         private readonly IBookRepository _bookRepository;

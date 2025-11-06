@@ -6,6 +6,7 @@
     <File Path="9 Модуль эссе.txt" />
   </Folder>
   <Project Path="4Module/4Module.csproj" />
+  <Project Path="AnalyticsWorker/AnalyticsWorker.csproj" Id="e863a5b7-250a-4f53-a3df-5fccc1a20acc" />
   <Project Path="Application/Application.csproj" Id="6d6a2d1a-458a-46f3-90f9-dd8dd1050a1a" />
   <Project Path="Domain/Domain.csproj" Id="f85fbf1e-7627-4c84-98fb-7652803dc7cf" />
   <Project Path="GrpcAuthorsService/GrpcAuthorsService.csproj" Id="37a41e4d-592e-4ac1-bf65-24b2491fb9a4" />

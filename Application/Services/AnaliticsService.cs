@@ -4,6 +4,8 @@ using Confluent.Kafka;
 
 namespace Applications.Services
 {
+
+
     public class AnaliticsService : IAnaliticsService
     {
         private readonly IProducer<string, string> _producer;
