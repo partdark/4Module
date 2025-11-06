@@ -5,6 +5,7 @@ using Domain.Entitties;
 using Domain.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
@@ -47,13 +48,15 @@ namespace xUnit_Test_Project
         private readonly Mock<IAuthorHttpService> _authorMock;
         private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
         private readonly IBookService _bookService;
+        private readonly Mock<IAnaliticsService> _analyticsMock;
 
         public BookReposotoryTest()
         {
             _bookMock = new Mock<IBookRepository>();
             _authorMock = new Mock<IAuthorHttpService>();
             _httpClientFactoryMock = new Mock<IHttpClientFactory>();
-            _bookService = new BookService(_bookMock.Object, _authorMock.Object, _httpClientFactoryMock.Object);
+            _analyticsMock = new Mock<IAnaliticsService>();
+            _bookService = new BookService(_bookMock.Object, _authorMock.Object, _httpClientFactoryMock.Object, _analyticsMock.Object);
         }
 
 

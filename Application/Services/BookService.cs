@@ -9,13 +9,13 @@ using Microsoft.Extensions.Hosting;
 
 namespace Applications.Services
 {
-   
+
     public class BookService : IBookService
     {
         private readonly IBookRepository _bookRepository;
         //  private readonly IAuthorRepository _authorRepository; 
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IAuthorHttpService _authorHttpService; 
+        private readonly IAuthorHttpService _authorHttpService;
         private readonly IAnaliticsService _analiticsService;
 
         public BookService(IBookRepository bookRepository, IAuthorHttpService authorHttpService, IHttpClientFactory httpClientFactory, IAnaliticsService analiticsService)
@@ -40,16 +40,17 @@ namespace Applications.Services
 
                 return content;
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 throw new Exception($"Ошибка {ex.Message}");
             }
-            
+
         }
 
         public async Task<BookResponseDTO?> GetByIdAsync(Guid id)
         {
             var book = await _bookRepository.GetByIdAsync(id);
-            await _analiticsService.SendEventAsync("books-views", book.Id.ToString(), $"New view to book {book.Title.ToString()}" );
+            if (book != null) await _analiticsService.SendEventAsync("books-views", book.Id.ToString(), $"New view to book {book.Title.ToString()}");
             return book != null ? MapToDto(book) : null;
         }
 
@@ -126,7 +127,8 @@ namespace Applications.Services
             catch
             {
                 return false;
-            };
+            }
+            ;
         }
 
         private BookResponseDTO MapToDto(Book book)

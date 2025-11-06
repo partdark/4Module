@@ -190,6 +190,7 @@ builder.Services.AddHostedService<KafkaConsumerService>();
 
 
 
+
 var app = builder.Build();
 
 
