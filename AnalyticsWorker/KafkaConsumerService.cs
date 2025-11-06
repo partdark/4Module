@@ -51,24 +51,64 @@ namespace AnalyticsWorker
                 {
                     try
                     {
-                        var result = _consumer.Consume(stoppingToken);
-                        if (result != null)
-                        {
-                            var bookEvent = new BookEvent
-                            {
-                                Key = result.Message.Key,
-                                Message = result.Message.Value
-                            };
-                            await _collection.InsertOneAsync(bookEvent, cancellationToken: stoppingToken);
-                            _consumer.StoreOffset(result);
+                      
+                        var messages = new List<ConsumeResult<string, string>>();
+                        var batchSize = 10;
+                        var timeout = TimeSpan.FromMilliseconds(100);
 
-                            _logger.LogInformation($"New view {result.Message.Key} - {result.Message.Value}");
-                           
+                        for (int i = 0; i < batchSize && !stoppingToken.IsCancellationRequested; i++)
+                        {
+                            var result = _consumer.Consume(timeout);
+                            if (result != null)
+                            {
+                                messages.Add(result);
+                            }
+                            else
+                            {
+                                break; 
+                            }
                         }
-                    }
-                    catch (ConsumeException ex)
-                    {
-                        _logger.LogError($"Error {ex.Error.Reason}");
+
+                        if (messages.Count > 0)
+                        {
+                           
+                            await Parallel.ForEachAsync(messages,
+                                new ParallelOptions
+                                {
+                                    MaxDegreeOfParallelism = 4,
+                                    CancellationToken = stoppingToken
+                                },
+                                async (message, ct) =>
+                                {
+                                    try
+                                    {
+                                        var bookEvent = new BookEvent
+                                        {
+                                            Key = message.Message.Key,
+                                            Message = message.Message.Value
+                                        };
+
+                                        await _collection.InsertOneAsync(bookEvent, cancellationToken: ct);
+
+                                      
+                                        lock (_consumer)
+                                        {
+                                            _consumer.StoreOffset(message);
+                                        }
+
+                                        _logger.LogInformation($"Выполнение: {message.Message.Key} - {message.Message.Value}");
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError($"Ошибка: {ex.Message}");
+                                    }
+                                });
+                        }
+                        else
+                        {
+                           
+                            await Task.Delay(100, stoppingToken);
+                        }
                     }
                     catch (Exception ex)
                     {
