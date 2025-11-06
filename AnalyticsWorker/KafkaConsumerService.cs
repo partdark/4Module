@@ -29,15 +29,17 @@ namespace AnalyticsWorker
               await Task.Delay(5000, stoppingToken);
             try
             {
+                
                 var config = new ConsumerConfig
                 {
-                    BootstrapServers = "localhost:9092",
+                    BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS") ?? "localhost:9092",
                     GroupId = "analitics-group",
                     AutoOffsetReset = AutoOffsetReset.Earliest,
                 };
                 _consumer = new ConsumerBuilder<string, string>(config).Build();
 
-                var client = new MongoClient("mongodb://localhost:27017");
+                var mongoConnectionString = Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING") ?? "mongodb://localhost:27017";
+                var client = new MongoClient(mongoConnectionString);
                 var database = client.GetDatabase("analytics");
                 _collection = database.GetCollection<BookEvent>("books-views");
 

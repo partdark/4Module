@@ -42,7 +42,7 @@ services:
       KAFKA_CLUSTERS_0_NAME: local-kafka
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
 
-
+  
   postgres:
     image: postgres:15
     environment:
@@ -88,6 +88,16 @@ services:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     restart: unless-stopped
 
+  analytics-worker:
+    build:
+      context: .
+      dockerfile: AnalyticsWorker/Dockerfile
+    depends_on:
+      - kafka
+      - mongodb
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - MONGODB_CONNECTION_STRING=mongodb://mongodb:27017
 
 volumes:
   postgres_data:

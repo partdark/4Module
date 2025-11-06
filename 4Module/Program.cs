@@ -186,7 +186,7 @@ builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
-builder.Services.AddHostedService<KafkaConsumerService>();
+//builder.Services.AddHostedService<KafkaConsumerService>(); отдельный сервис
 
 
 
