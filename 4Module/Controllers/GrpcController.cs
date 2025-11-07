@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿/*using AuthorGrpc.Contracts;
+using BookGrpc.Contracts;
 using Grpc.Net.Client;
+using Microsoft.AspNetCore.Mvc;
 
 namespace _4Module.Controllers;
 
@@ -13,9 +15,9 @@ public class GrpcController : ControllerBase
         try
         {
             using var channel = GrpcChannel.ForAddress("https://localhost:7001");
-            var client = new BookGrpc.Contracts.BookService.BookServiceClient(channel);
+            var client = new BookService.BookServiceClient(channel);
 
-            var response = await client.GetBookAsync(new BookGrpc.Contracts.GetBookRequest { Id = id });
+            var response = await client.GetBookAsync(new GetBookRequest { Id = id });
 
             return Ok(new
             {
@@ -35,9 +37,9 @@ public class GrpcController : ControllerBase
         try
         {
             using var channel = GrpcChannel.ForAddress("https://localhost:7002");
-            var client = new AuthorGrpc.Contracts.AuthorService.AuthorServiceClient(channel);
+            var client = new AuthorService.AuthorServiceClient(channel);
 
-            var response = await client.GetAuthorAsync(new AuthorGrpc.Contracts.GetAuthorRequest { Id = id });
+            var response = await client.GetAuthorAsync(new GetAuthorRequest { Id = id });
 
             return Ok(new
             {
@@ -57,3 +59,4 @@ public class GrpcController : ControllerBase
         }
     }
 }
+*/

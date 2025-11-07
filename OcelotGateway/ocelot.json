@@ -2,11 +2,11 @@
   "Routes": [
     {
       "DownstreamPathTemplate": "/api/Auth/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7134
+          "Host": "book-service",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/auth/{everything}",
@@ -14,11 +14,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/Book/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7134
+          "Host": "book-service",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/books/{everything}",
@@ -26,11 +26,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/Grpc/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7134
+          "Host": "book-service",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/grpc/{everything}",
@@ -38,11 +38,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/Order/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7134
+          "Host": "book-service",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/orders/{everything}",
@@ -50,11 +50,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/Review/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7134
+          "Host": "book-service",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/reviews/{everything}",
@@ -62,11 +62,11 @@
     },
     {
       "DownstreamPathTemplate": "/api/TestApllication/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7134
+          "Host": "book-service",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/test/{everything}",
