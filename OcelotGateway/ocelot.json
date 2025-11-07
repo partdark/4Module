@@ -56,6 +56,18 @@
       "RouteClaimsRequirement": {
         "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "Admin"
       }
+    },
+    {
+      "DownstreamPathTemplate": "/api/Grpc/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "book-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/Grpc/{everything}",
+      "UpstreamHttpMethod": [ "GET" ]
     }
   ],
   "GlobalConfiguration": {

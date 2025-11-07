@@ -15,7 +15,9 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.66" />
-    <PackageReference Include="Grpc.Tools" Version="2.76.0">
+    <PackageReference Include="Google.Protobuf" Version="3.28.3" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.71.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -31,13 +33,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Protobuf Include="..\GrpcBooksService\Protos\book.proto" GrpcServices="Client" Link="Protos\book.proto" />
+    <Protobuf Include="..\GrpcAuthorsService\Protos\author.proto" GrpcServices="Client" Link="Protos\author.proto" />
    <ProjectReference Include="..\AnalyticsWorker\AnalyticsWorker.csproj" />
    <ProjectReference Include="..\Application\Application.csproj" />
-  <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
-  <ProjectReference Include="..\InventoryService\InventoryService.csproj" />
-  <ProjectReference Include="..\NotificationService\NotificationService.csproj" />
-  <ProjectReference Include="..\OrderContracts\OrderContracts.csproj" />
-  <ProjectReference Include="..\OrderWorkerService\OrderWorkerService.csproj" />
+   <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+   <ProjectReference Include="..\InventoryService\InventoryService.csproj" />
+   <ProjectReference Include="..\NotificationService\NotificationService.csproj" />
+   <ProjectReference Include="..\OrderContracts\OrderContracts.csproj" />
+   <ProjectReference Include="..\OrderWorkerService\OrderWorkerService.csproj" />
 </ItemGroup>
 
 </Project>

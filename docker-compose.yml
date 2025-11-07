@@ -11,6 +11,10 @@ services:
         condition: service_started
       rabbitmq:
         condition: service_healthy
+      grpc-book-service:
+        condition: service_started
+      grpc-author-service:
+        condition: service_started
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=bookdb;Username=postgres;Password=postgrespw
@@ -21,6 +25,46 @@ services:
       - ConnectionStrings__Redis=redis:6379
       - ConnectionStrings__MongoDB=mongodb://mongodb:27017
       - Kafka__BootstrapServers=kafka:29092
+      - GrpcServices__BookService=http://grpc-book-service:8080
+      - GrpcServices__AuthorService=http://grpc-author-service:8080
+
+  grpc-book-service:
+    build:
+      context: .
+      dockerfile: GrpcBooksService/Dockerfile
+    ports:
+      - "7001:8080"
+    depends_on:
+      postgres:
+        condition: service_started
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=bookdb;Username=postgres;Password=postgrespw
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_HTTPS_PORT=
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - Kafka__BootstrapServers=kafka:29092
+    restart: unless-stopped
+
+  grpc-author-service:
+    build:
+      context: .
+      dockerfile: GrpcAuthorsService/Dockerfile
+    ports:
+      - "7002:8080"
+    depends_on:
+      postgres:
+        condition: service_started
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=bookdb;Username=postgres;Password=postgrespw
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_HTTPS_PORT=
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - Kafka__BootstrapServers=kafka:29092
+    restart: unless-stopped
+
+
 
 
   gateway-service:
