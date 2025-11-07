@@ -80,21 +80,27 @@ services:
 
   mongodb:
     image: mongo:7.0
-
     ports:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   analytics-worker:
     build:
       context: .
       dockerfile: AnalyticsWorker/Dockerfile
     depends_on:
-      - kafka
-      - mongodb
+      kafka:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - MONGODB_CONNECTION_STRING=mongodb://mongodb:27017
