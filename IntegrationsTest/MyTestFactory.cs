@@ -4,6 +4,7 @@ using Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using OrderWorkerService.Data;
 
 namespace IntegrationTest
 {
@@ -49,7 +50,20 @@ namespace IntegrationTest
                 {
                     services.Remove(descriptor);
                 }
+                var orderDescriptors = services
+    .Where(d => d.ServiceType == typeof(DbContextOptions<OrderContext>) ||
+               d.ServiceType == typeof(OrderContext))
+    .ToList();
 
+                foreach (var descriptor in orderDescriptors)
+                {
+                    services.Remove(descriptor);
+                }
+
+                services.AddDbContext<OrderContext>(options =>
+                {
+                    options.UseInMemoryDatabase("OrderDbTest");
+                }, ServiceLifetime.Scoped);
                 services.AddDbContext<BookContext>(options =>
                 {
                     options.UseInMemoryDatabase("DbTest");

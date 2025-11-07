@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\4Module\4Module.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\OrderWorkerService\OrderWorkerService.csproj" />
   </ItemGroup>
 
 </Project>

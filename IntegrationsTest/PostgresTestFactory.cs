@@ -3,6 +3,7 @@ using Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using OrderWorkerService.Data;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -61,7 +62,20 @@ namespace IntegrationTest
                                d.ServiceType == typeof(DbContextOptions<BookContext>) ||
                                d.ServiceType == typeof(BookContext))
                     .ToList();
+                var orderDescriptors = services
+                    .Where(d => d.ServiceType == typeof(DbContextOptions<OrderContext>) ||
+               d.ServiceType == typeof(OrderContext))
+                        .ToList();
 
+                foreach (var descriptor in orderDescriptors)
+                {
+                    services.Remove(descriptor);
+                }
+
+                services.AddDbContext<OrderContext>(options =>
+                {
+                    options.UseNpgsql(_postgresContainer.GetConnectionString());
+                }, ServiceLifetime.Scoped);
                 foreach (var descriptor in descriptors)
                 {
                     services.Remove(descriptor);
