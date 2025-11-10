@@ -1,4 +1,4 @@
-{
+/*{
   "Routes": [
     {
       "DownstreamPathTemplate": "/swagger/{everything}",
@@ -74,3 +74,4 @@
     "BaseUrl": "http://localhost:8080"
   }
 }
+  */
