@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Confluent.Kafka.Extensions.OpenTelemetry;
 
 namespace Application.DependencyInjection
 {
@@ -32,11 +33,12 @@ namespace Application.DependencyInjection
             {
                 var config = new ProducerConfig
                 {
-
                     BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS") ?? "localhost:9092"
-
                 };
-                return new ProducerBuilder<string, string>(config).Build();
+                return new ProducerBuilder<string, string>(config)
+                    .SetKeySerializer(Serializers.Utf8)
+                    .SetValueSerializer(Serializers.Utf8)
+                    .Build(); 
             });
 
             services.AddHttpClient("TestClient", client =>

@@ -6,6 +6,8 @@ using AnalyticsWorker;
 using Application.DependencyInjection;
 using Application.Settings;
 using Applications.Services;
+using Confluent.Kafka.Extensions.OpenTelemetry;
+using Elyspio.Utils.Telemetry.MassTransit.Extensions;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure.DependencyInjection;
@@ -58,6 +60,7 @@ builder.Services.AddMassTransit(x =>
         cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
         cfg.ConfigureEndpoints(context);
     });
+   
 });
 
 builder.Services.AddDbContext<OrderContext>(options =>
@@ -198,6 +201,9 @@ builder.Services.AddOpenTelemetry().WithTracing(b => b
          .ConfigureResource(resource => resource.AddService("book-service"))
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
+        .AddAppMassTransitInstrumentation()
+         .AddSource("kafka-producer")
+        .AddConfluentKafkaInstrumentation()
         .AddZipkinExporter(options =>
         options.Endpoint = new Uri("http://zipkin:9411/api/v2/spans")
     )
