@@ -70,7 +70,7 @@ services:
   gateway-service:
     build:
       context: .
-      dockerfile: OcelotGateway/Dockerfile
+      dockerfile: Gateway/Dockerfile
     ports:
       - "8080:8080"
     depends_on:
