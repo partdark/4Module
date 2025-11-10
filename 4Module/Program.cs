@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NotificationService;
 using OpenTelemetry;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OrderWorkerService;
 using OrderWorkerService.Data;
@@ -194,6 +195,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 
 builder.Services.AddOpenTelemetry().WithTracing(b => b
+         .ConfigureResource(resource => resource.AddService("book-service"))
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddZipkinExporter(options =>

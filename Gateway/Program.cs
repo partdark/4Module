@@ -1,14 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Ocelot.DependencyInjection;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer("Bearer", options =>
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -22,26 +21,30 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
         };
     });
-builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("AdminOnly", policy =>
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Bearer", policy => policy.RequireAuthenticatedUser());
+    options.AddPolicy("AdminOnly", policy =>
         policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Admin"));
+});
 
 builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-
-builder.Services.AddOpenTelemetry().WithTracing(b => b
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("gateway-book-service"))
+    .WithTracing(b => b
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddZipkinExporter(options =>
-        options.Endpoint = new Uri("http://zipkin:9411/api/v2/spans")
-    )
-);
-
+            options.Endpoint = new Uri("http://zipkin:9411/api/v2/spans")
+        )
+    );
 
 var app = builder.Build();
 
 app.UseAuthentication();
-app.UseRouting();
+app.UseAuthorization();
 
 app.MapReverseProxy();
 app.Run();
