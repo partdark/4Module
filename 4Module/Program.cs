@@ -16,6 +16,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NotificationService;
+using OpenTelemetry;
+using OpenTelemetry.Trace;
 using OrderWorkerService;
 using OrderWorkerService.Data;
 using System.Diagnostics;
@@ -190,6 +192,14 @@ builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+
+builder.Services.AddOpenTelemetry().WithTracing(b => b
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddZipkinExporter(options =>
+        options.Endpoint = new Uri("http://zipkin:9411/api/v2/spans")
+    )
+);
 //builder.Services.AddHostedService<KafkaConsumerService>(); отдельный сервис
 
 

@@ -15,6 +15,8 @@ services:
         condition: service_started
       grpc-author-service:
         condition: service_started
+      zipkin:
+        condition: service_started
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=bookdb;Username=postgres;Password=postgrespw
@@ -64,7 +66,11 @@ services:
       - Kafka__BootstrapServers=kafka:29092
     restart: unless-stopped
 
-
+  zipkin:
+    image: openzipkin/zipkin:latest
+    ports:
+      - "9411:9411"     
+    restart: unless-stopped
 
 
   gateway-service:
@@ -74,7 +80,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - book-service
+      - zipkin
+      - book-service       
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
 
