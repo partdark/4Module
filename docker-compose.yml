@@ -195,9 +195,36 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - MONGODB_CONNECTION_STRING=mongodb://mongodb:27017
       - ZIPKIN_ENDPOINT=http://zipkin:9411/api/v2/spans
+    
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
 
 volumes:
   postgres_data:
   redis_data:
   mongodb_data:
   rabbitmq_data:
+  prometheus_data:
+  grafana_data:

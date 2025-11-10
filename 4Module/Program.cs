@@ -202,7 +202,7 @@ builder.Services.AddOpenTelemetry().WithTracing(b => b
          .ConfigureResource(resource => resource.AddService("book-service"))
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
-        .AddAppMassTransitInstrumentation()
+       // .AddAppMassTransitInstrumentation()
          .AddSource("kafka-producer")
         .AddConfluentKafkaInstrumentation()
         .AddZipkinExporter(options =>
