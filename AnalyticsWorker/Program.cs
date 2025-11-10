@@ -16,8 +16,8 @@ builder.Services.AddOpenTelemetry()
         .AddMongoDBInstrumentation()
         .AddZipkinExporter(options =>
     options.Endpoint = new Uri(Environment.GetEnvironmentVariable("ZIPKIN_ENDPOINT") ?? "http://zipkin:9411/api/v2/spans")
-)
-    );
+    )
+);
 
 
 builder.Services.AddHostedService<KafkaConsumerService>();

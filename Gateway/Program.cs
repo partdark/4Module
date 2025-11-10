@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using System.Text;
@@ -38,13 +39,22 @@ builder.Services.AddOpenTelemetry()
         .AddHttpClientInstrumentation()
         .AddZipkinExporter(options =>
             options.Endpoint = new Uri("http://zipkin:9411/api/v2/spans")
-        )
+           )
+    )
+    .WithMetrics(m => m
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddPrometheusExporter()
     );
 
+
+
 var app = builder.Build();
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.MapPrometheusScrapingEndpoint();
 app.MapReverseProxy();
 app.Run();

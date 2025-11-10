@@ -19,6 +19,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NotificationService;
 using OpenTelemetry;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OrderWorkerService;
@@ -207,7 +208,12 @@ builder.Services.AddOpenTelemetry().WithTracing(b => b
         .AddZipkinExporter(options =>
         options.Endpoint = new Uri("http://zipkin:9411/api/v2/spans")
     )
-);
+).WithMetrics(m => m
+     .AddAspNetCoreInstrumentation()
+     .AddHttpClientInstrumentation()
+     .AddRuntimeInstrumentation()
+     .AddPrometheusExporter()
+    );
 //builder.Services.AddHostedService<KafkaConsumerService>(); отдельный сервис
 
 
@@ -288,7 +294,7 @@ app.MapControllers();
 
 app.MapHealthChecks("/healthz");
 
-
+app.MapPrometheusScrapingEndpoint();
 
 
 app.Run();
