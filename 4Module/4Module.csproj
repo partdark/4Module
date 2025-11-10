@@ -31,6 +31,7 @@
   <ItemGroup>
    <Protobuf Include="..\GrpcBooksService\Protos\book.proto" GrpcServices="Client" />
   <Protobuf Include="..\GrpcAuthorsService\Protos\author.proto" GrpcServices="Client" />
+  <ProjectReference Include="..\AnalyticsWorker\AnalyticsWorker.csproj" />
     <ProjectReference Include="..\Application\Application.csproj" />
     <ProjectReference Include="..\GrpcAuthorsService\GrpcAuthorsService.csproj" />
     <ProjectReference Include="..\GrpcBooksService\GrpcBooksService.csproj" />

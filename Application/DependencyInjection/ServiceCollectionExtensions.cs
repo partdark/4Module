@@ -3,6 +3,7 @@ using Application.Interfaces;
 using Application.Services;
 using Application.Validator;
 using Applications.Services;
+using Confluent.Kafka;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -26,6 +27,17 @@ namespace Application.DependencyInjection
             services.AddScoped<IAuthorService, AuthorService>();
             services.AddScoped<IValidator<CreateBookDTO>, CreateBookDTOValidator>();
             services.AddScoped<JwtService>();
+            services.AddScoped<IAnaliticsService, AnaliticsService>();
+            services.AddSingleton<IProducer<string, string>>(provider =>
+            {
+                var config = new ProducerConfig
+                {
+
+                    BootstrapServers = "localhost:9092"
+
+                };
+                return new ProducerBuilder<string, string>(config).Build();
+            });
 
             services.AddHttpClient("TestClient", client =>
             {
@@ -37,7 +49,7 @@ namespace Application.DependencyInjection
             }).AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(3)))
                 .AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(3, _ => TimeSpan.FromSeconds(1)))
             .AddPolicyHandler(HttpPolicyExtensions.HandleTransientHttpError()
-    .CircuitBreakerAsync(5, TimeSpan.FromSeconds(2))); 
+    .CircuitBreakerAsync(5, TimeSpan.FromSeconds(2)));
 
 
             return services;
