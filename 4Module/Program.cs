@@ -24,12 +24,26 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OrderWorkerService;
 using OrderWorkerService.Data;
+using Serilog;
+using Serilog.Sinks.Grafana.Loki;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .Enrich.WithProperty("Service", "book-service")
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.GrafanaLoki(
+        builder.Configuration["Loki:Url"] ?? "http://loki:3100",
+        labels: new[] { new LokiLabel { Key = "service", Value = "book-service" } })
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 
 // builder.Services.AddDbContext<BookContext>(options =>
@@ -61,7 +75,7 @@ builder.Services.AddMassTransit(x =>
         cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
         cfg.ConfigureEndpoints(context);
     });
-   
+
 });
 
 builder.Services.AddDbContext<OrderContext>(options =>
@@ -139,17 +153,20 @@ builder.Services.AddAuthentication(options =>
         {
             OnAuthenticationFailed = context =>
             {
-                Console.WriteLine($"JWT Auth Failed: {context.Exception.Message}");
+               // Console.WriteLine
+                Log.Information($"JWT Auth Failed: {context.Exception.Message}");
                 return Task.CompletedTask;
             },
             OnTokenValidated = context =>
             {
-                Console.WriteLine($"JWT Token Validated for: {context.Principal.Identity.Name}");
+               // Console.WriteLine
+                Log.Information($"JWT Token Validated for: {context.Principal.Identity.Name}");
                 return Task.CompletedTask;
             },
             OnChallenge = context =>
             {
-                Console.WriteLine($"JWT Challenge: {context.Error}");
+               // Console.WriteLine
+                Log.Information($"JWT Challenge: {context.Error}");
                 context.HandleResponse();
                 context.Response.StatusCode = 401;
                 context.Response.ContentType = "application/json";
@@ -197,18 +214,23 @@ builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+var meter = new System.Diagnostics.Metrics.Meter("book-service");
+var bookCounter = meter.CreateCounter<int>("books.created", "books", "Number of books created");
+builder.Services.AddSingleton(bookCounter);
 
 builder.Services.AddOpenTelemetry().WithTracing(b => b
          .ConfigureResource(resource => resource.AddService("book-service"))
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
-       // .AddAppMassTransitInstrumentation()
+         // .AddAppMassTransitInstrumentation()
          .AddSource("kafka-producer")
         .AddConfluentKafkaInstrumentation()
         .AddZipkinExporter(options =>
         options.Endpoint = new Uri("http://zipkin:9411/api/v2/spans")
     )
 ).WithMetrics(m => m
+        .AddMeter("book-service")
+        .AddMeter("Polly")
      .AddAspNetCoreInstrumentation()
      .AddHttpClientInstrumentation()
      .AddRuntimeInstrumentation()
@@ -243,8 +265,10 @@ app.UseExceptionHandler(exceptionHandlerApp =>
             Instance = context.Request.Path,
             TraceId = context.TraceIdentifier
         };
-        Console.WriteLine($"Error {exeption?.Message}");
-        Console.WriteLine($"StackTrace {exeption?.StackTrace}");
+        //Console.WriteLine
+        Log.Information($"Error {exeption?.Message}");
+        //Console.WriteLine
+        Log.Information($"StackTrace {exeption?.StackTrace}");
 
         await context.Response.WriteAsJsonAsync(details);
     });
@@ -255,11 +279,13 @@ app.Use(async (context, next) =>
 
     var startTime = DateTime.UtcNow;
     var stopwatch = Stopwatch.StartNew();
-    Console.WriteLine($"Start {context.Request.Method}{context.Request.Path} time - {startTime}");
+    //Console.WriteLine
+    Log.Information($"Start {context.Request.Method}{context.Request.Path} time - {startTime}");
 
     await next();
     stopwatch.Stop();
-    Console.WriteLine($"done {context.Request.Method}{context.Request.Path}, status {context.Response.StatusCode} time - {stopwatch.ToString()}");
+    //Console.WriteLine
+    Log.Information($"done {context.Request.Method}{context.Request.Path}, status {context.Response.StatusCode} time - {stopwatch.ToString()}");
 }
 );
 

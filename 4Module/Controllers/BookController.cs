@@ -245,8 +245,8 @@ namespace _4Module.Controllers
         public async Task<ActionResult<IEnumerable<AuthorResponseDTO>>> GetAuthorsByIds([FromQuery] List<Guid> ids)
         {
 
-            var authors = await _authorService.GetByIdsAsync(ids);
-            return Ok(authors);
+            //var authors = await _authorService.GetByIdsAsync(ids);
+            return StatusCode(503);
         }
         [HttpGet("test-fallback")]
         public async Task<IActionResult> TestFallback([FromServices] IAuthorHttpService authorHttpService)
@@ -257,6 +257,15 @@ namespace _4Module.Controllers
             return Ok(authors);
 
 
+        }
+        [HttpGet("test-circuit-breaker")]
+        public async Task<IActionResult> TestCircuitBreaker()
+        {
+
+            
+                    
+            return  Ok(await _authorHttpService.GetByIdsAsync(new List<Guid> { Guid.NewGuid() }));
+             
         }
     }
 }

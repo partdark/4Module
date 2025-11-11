@@ -3,9 +3,24 @@ using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Serilog;
+using Serilog.Sinks.Grafana.Loki;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .Enrich.WithProperty("Service", "gateway-service")
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.GrafanaLoki(
+        builder.Configuration["Loki:Url"] ?? "http://loki:3100",
+        labels: new[] { new LokiLabel { Key = "service", Value = "gateway-service" } })
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>

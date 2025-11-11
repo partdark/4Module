@@ -29,6 +29,7 @@ namespace Application.Services
         {
             try
             {
+               
                 var idsQuery = string.Join("&", ids.Select(x => $"Ids={x}"));
 
                 var response = await _httpClient.GetAsync($"/api/Book/authors/batch?{idsQuery}");
