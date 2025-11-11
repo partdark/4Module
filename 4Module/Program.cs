@@ -43,10 +43,14 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", 5672, "/", h =>
+        var rabbitHost = builder.Configuration["RabbitMQ:Host"] ?? "rabbitmq";
+        var rabbitUser = builder.Configuration["RabbitMQ:Username"] ?? "admin";
+        var rabbitPass = builder.Configuration["RabbitMQ:Password"] ?? "admin";
+
+        cfg.Host(rabbitHost, 5672, "/", h =>
         {
-            h.Username("admin");
-            h.Password("admin");
+            h.Username(rabbitUser);
+            h.Password(rabbitPass);
         });
         cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
         cfg.ConfigureEndpoints(context);

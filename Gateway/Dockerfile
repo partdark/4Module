@@ -2,29 +2,29 @@
 
 # Этот этап используется при запуске из VS в быстром режиме (по умолчанию для конфигурации отладки)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-
+USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
-
+EXPOSE 8081
 
 
 # Этот этап используется для сборки проекта службы
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["GrpcAuthorsService/GrpcAuthorsService.csproj", "GrpcAuthorsService/"]
-RUN dotnet restore "./GrpcAuthorsService/GrpcAuthorsService.csproj"
+COPY ["OcelotGateway/OcelotGateway.csproj", "OcelotGateway/"]
+RUN dotnet restore "./OcelotGateway/OcelotGateway.csproj"
 COPY . .
-WORKDIR "/src/GrpcAuthorsService"
-RUN dotnet build "./GrpcAuthorsService.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/OcelotGateway"
+RUN dotnet build "./OcelotGateway.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./GrpcAuthorsService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./OcelotGateway.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "GrpcAuthorsService.dll"]
+ENTRYPOINT ["dotnet", "OcelotGateway.dll"]

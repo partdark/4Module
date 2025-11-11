@@ -39,5 +39,6 @@ using (var scope = app.Services.CreateScope())
 
 app.MapGrpcService<BookServiceImpl>();
 
-Console.WriteLine("BookGrpcService starting on https://localhost:7001");
-app.Run("https://localhost:7001");
+//Console.WriteLine("BookGrpcService starting on https://localhost:7001");
+//app.Run("https://localhost:7001");
+app.Run();

@@ -33,7 +33,7 @@ namespace Application.DependencyInjection
                 var config = new ProducerConfig
                 {
 
-                    BootstrapServers = "localhost:9092"
+                    BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS") ?? "localhost:9092"
 
                 };
                 return new ProducerBuilder<string, string>(config).Build();

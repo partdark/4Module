@@ -31,5 +31,6 @@ using (var scope = app.Services.CreateScope())
 
 app.MapGrpcService<AuthorServiceImpl>();
 
-Console.WriteLine("AuthorGrpcService starting on https://localhost:7002");
-app.Run("https://localhost:7002");
+//Console.WriteLine("AuthorGrpcService starting on https://localhost:7002");
+//app.Run("https://localhost:7002");
+app.Run();  

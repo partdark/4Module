@@ -1,5 +1,83 @@
 
 services:
+  book-service:
+    build:
+      context: .
+      dockerfile: 4Module/Dockerfile
+    ports:
+      - "7134:8080"
+    depends_on:
+      postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      grpc-book-service:
+        condition: service_started
+      grpc-author-service:
+        condition: service_started
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=bookdb;Username=postgres;Password=postgrespw
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=admin
+      - RabbitMQ__Password=admin
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - ConnectionStrings__Redis=redis:6379
+      - ConnectionStrings__MongoDB=mongodb://mongodb:27017
+      - Kafka__BootstrapServers=kafka:29092
+      - GrpcServices__BookService=http://grpc-book-service:8080
+      - GrpcServices__AuthorService=http://grpc-author-service:8080
+
+  grpc-book-service:
+    build:
+      context: .
+      dockerfile: GrpcBooksService/Dockerfile
+    ports:
+      - "7001:8080"
+    depends_on:
+      postgres:
+        condition: service_started
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=bookdb;Username=postgres;Password=postgrespw
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_HTTPS_PORT=
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - Kafka__BootstrapServers=kafka:29092
+    restart: unless-stopped
+
+  grpc-author-service:
+    build:
+      context: .
+      dockerfile: GrpcAuthorsService/Dockerfile
+    ports:
+      - "7002:8080"
+    depends_on:
+      postgres:
+        condition: service_started
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=bookdb;Username=postgres;Password=postgrespw
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_HTTPS_PORT=
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - Kafka__BootstrapServers=kafka:29092
+    restart: unless-stopped
+
+
+
+
+  gateway-service:
+    build:
+      context: .
+      dockerfile: Gateway/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - book-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
@@ -19,7 +97,7 @@ services:
       - "9092:9092"
       - "29092:29092" 
     healthcheck:
-      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:29092", "--list"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -30,14 +108,14 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     hostname: kafka-ui
     depends_on:
       - kafka
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: local-kafka
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
@@ -66,6 +144,11 @@ services:
       RABBITMQ_DEFAULT_PASS: admin
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq/mnesia
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 
 
@@ -80,21 +163,27 @@ services:
 
   mongodb:
     image: mongo:7.0
-
     ports:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   analytics-worker:
     build:
       context: .
       dockerfile: AnalyticsWorker/Dockerfile
     depends_on:
-      - kafka
-      - mongodb
+      kafka:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - MONGODB_CONNECTION_STRING=mongodb://mongodb:27017

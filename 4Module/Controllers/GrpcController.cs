@@ -1,25 +1,34 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AuthorGrpc.Contracts;
+using BookGrpc.Contracts;
 using Grpc.Net.Client;
-
-namespace _4Module.Controllers;
+using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
 public class GrpcController : ControllerBase
 {
+    private readonly IConfiguration _configuration;
+
+    public GrpcController(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
     [HttpGet("book/{id}")]
     public async Task<IActionResult> GetBookViaGrpc(string id)
     {
         try
         {
-            using var channel = GrpcChannel.ForAddress("https://localhost:7001");
-            var client = new BookGrpc.Contracts.BookService.BookServiceClient(channel);
+            var bookServiceUrl = GetGrpcServiceUrl("BookService", "http://localhost:7001");
+            using var channel = GrpcChannel.ForAddress(bookServiceUrl);
+            var client = new BookService.BookServiceClient(channel);
 
-            var response = await client.GetBookAsync(new BookGrpc.Contracts.GetBookRequest { Id = id });
+            var response = await client.GetBookAsync(new GetBookRequest { Id = id });
 
             return Ok(new
             {
                 Source = "gRPC BookService",
+                ServiceUrl = bookServiceUrl,
                 Book = new { response.Id, response.Title, response.Year }
             });
         }
@@ -34,14 +43,16 @@ public class GrpcController : ControllerBase
     {
         try
         {
-            using var channel = GrpcChannel.ForAddress("https://localhost:7002");
-            var client = new AuthorGrpc.Contracts.AuthorService.AuthorServiceClient(channel);
+            var authorServiceUrl = GetGrpcServiceUrl("AuthorService", "http://localhost:7002");
+            using var channel = GrpcChannel.ForAddress(authorServiceUrl);
+            var client = new AuthorService.AuthorServiceClient(channel);
 
-            var response = await client.GetAuthorAsync(new AuthorGrpc.Contracts.GetAuthorRequest { Id = id });
+            var response = await client.GetAuthorAsync(new GetAuthorRequest { Id = id });
 
             return Ok(new
             {
                 Source = "gRPC AuthorService",
+                ServiceUrl = authorServiceUrl,
                 Author = new
                 {
                     response.Id,
@@ -55,5 +66,25 @@ public class GrpcController : ControllerBase
         {
             return StatusCode(503, new { Error = "AuthorService unavailable", Details = ex.Message });
         }
+    }
+
+    private string GetGrpcServiceUrl(string serviceName, string defaultUrl)
+    {
+    
+        var dockerUrl = _configuration[$"GrpcServices:{serviceName}"];
+        if (!string.IsNullOrEmpty(dockerUrl))
+            return dockerUrl;
+
+       
+        var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+
+        if (isDocker)
+        {
+            return serviceName == "BookService"
+                ? "http://grpc-book-service:8080"
+                : "http://grpc-author-service:8080";
+        }
+
+        return defaultUrl;
     }
 }

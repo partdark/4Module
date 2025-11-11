@@ -29,7 +29,7 @@ public class AuthorServiceImpl : AuthorGrpc.Contracts.AuthorService.AuthorServic
             throw new RpcException(new Status(StatusCode.NotFound, "Author not found"));
         }
 
-        // Вызов BookService через gRPC
+     
         var books = new List<AuthorGrpc.Contracts.BookInfo>();
         if (author.Books.Any())
         {

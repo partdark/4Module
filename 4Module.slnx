@@ -16,6 +16,7 @@
   <Project Path="IntegrationsTest/IntegrationsTest.csproj" Id="52298b1c-325a-4aec-b429-73d2c8000d1a" />
   <Project Path="InventoryService/InventoryService.csproj" Id="a54bf546-0c30-4757-9efc-257ad3a3a598" />
   <Project Path="NotificationService/NotificationService.csproj" Id="e8cacf24-248e-41f9-a3df-5f54f34eebdb" />
+  <Project Path="Gateway/Gateway.csproj" Id="b94ddb9b-e65c-4981-b88d-c428638b39a8" />
   <Project Path="OrderContracts/OrderContracts.csproj" Id="06296009-7062-44bc-9ccb-6dd6efea08d6" />
   <Project Path="OrderWorkerService/OrderWorkerService.csproj" Id="69dd4e0d-9c83-431d-9dd5-73ff14ba97b9" />
   <Project Path="xUnit Test Project/xUnit Test Project.csproj" Id="7004bc2f-22fd-44f5-aa44-eb155c6d5b44" />
