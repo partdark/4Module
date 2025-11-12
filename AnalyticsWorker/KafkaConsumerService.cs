@@ -3,41 +3,37 @@ using Confluent.Kafka;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using OpenTelemetry;
+using OpenTelemetry.Context.Propagation;
+using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace AnalyticsWorker
 {
     public class KafkaConsumerService : BackgroundService
     {
+        private static readonly ActivitySource ActivitySource = new("analytics-worker");
         private IConsumer<string, string> _consumer;
         private readonly ILogger<KafkaConsumerService> _logger;
         private IMongoCollection<BookEvent> _collection;
 
         public KafkaConsumerService(ILogger<KafkaConsumerService> logger)
         {
-
             _logger = logger;
-
-
         }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-              await Task.Delay(5000, stoppingToken);
+            await Task.Delay(5000, stoppingToken);
             try
             {
-                
                 var config = new ConsumerConfig
                 {
                     BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS") ?? "localhost:9092",
                     GroupId = "analitics-group",
-                    AutoOffsetReset = AutoOffsetReset.Earliest,
-                    EnableAutoOffsetStore = false,
-                    EnableAutoCommit = false,
+                    AutoOffsetReset = AutoOffsetReset.Earliest
                 };
+
                 _consumer = new ConsumerBuilder<string, string>(config).Build();
 
                 var mongoConnectionString = Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING") ?? "mongodb://localhost:27017";
@@ -45,82 +41,40 @@ namespace AnalyticsWorker
                 var database = client.GetDatabase("analytics");
                 _collection = database.GetCollection<BookEvent>("books-views");
 
-
                 _consumer.Subscribe("books-views");
+
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    try
+                    var consumeResult = _consumer.Consume(stoppingToken);
+
+                    var propagator = Propagators.DefaultTextMapPropagator;
+                    var parentContext = propagator.Extract(default, consumeResult.Message.Headers, (headers, key) =>
                     {
-                      
-                        var messages = new List<ConsumeResult<string, string>>();
-                        var batchSize = 10;
-                        var timeout = TimeSpan.FromMilliseconds(100);
+                        var header = headers?.FirstOrDefault(h => h.Key == key);
+                        return header != null ? new[] { Encoding.UTF8.GetString(header.GetValueBytes()) } : Array.Empty<string>();
+                    });
 
-                        for (int i = 0; i < batchSize && !stoppingToken.IsCancellationRequested; i++)
-                        {
-                            var result = _consumer.Consume(timeout);
-                            if (result != null)
-                            {
-                                messages.Add(result);
-                            }
-                            else
-                            {
-                                break; 
-                            }
-                        }
+                    using var activity = ActivitySource.StartActivity("kafka.consume", ActivityKind.Consumer, parentContext.ActivityContext);
+                    activity?.SetTag("messaging.system", "kafka");
+                    activity?.SetTag("messaging.destination", "books-views");
 
-                        if (messages.Count > 0)
-                        {
-                           
-                            await Parallel.ForEachAsync(messages,
-                                new ParallelOptions
-                                {
-                                    MaxDegreeOfParallelism = 4,
-                                    CancellationToken = stoppingToken
-                                },
-                                async (message, ct) =>
-                                {
-                                    try
-                                    {
-                                        var bookEvent = new BookEvent
-                                        {
-                                            Key = message.Message.Key,
-                                            Message = message.Message.Value
-                                        };
-
-                                        await _collection.InsertOneAsync(bookEvent, cancellationToken: ct);
-
-                                      
-                                        lock (_consumer)
-                                        {
-                                            _consumer.StoreOffset(message);
-                                        }
-
-                                        _logger.LogInformation($"Выполнение: {message.Message.Key} - {message.Message.Value}");
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        _logger.LogError($"Ошибка: {ex.Message}");
-                                    }
-                                });
-                        }
-                        else
-                        {
-                           
-                            await Task.Delay(100, stoppingToken);
-                        }
-                    }
-                    catch (Exception ex)
+                    var bookEvent = new BookEvent
                     {
-                        _logger.LogError($"Mongo error: {ex.Message}");
-                    }
+                        Key = consumeResult.Message.Key ?? "",
+                        Message = consumeResult.Message.Value,
+                        TimeStamp = DateTime.UtcNow
+                    };
+
+                    using var mongoActivity = ActivitySource.StartActivity("mongodb.insert");
+                    mongoActivity?.SetTag("db.system", "mongodb");
+                    await _collection.InsertOneAsync(bookEvent);
+
+                    _logger.LogInformation($"Processed: {bookEvent.Key} - {bookEvent.Message}");
                 }
-
             }
-
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError($"Error: {ex.Message}");
             }
         }
 

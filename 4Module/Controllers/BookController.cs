@@ -1,12 +1,18 @@
 using Application;
 using Application.DTO;
 using Application.Interfaces;
+using Confluent.Kafka;
+using Domain.Entitties;
 using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
+using OpenTelemetry;
+using OpenTelemetry.Context.Propagation;
+using System.Diagnostics;
 using System.Net;
+using System.Text;
 
 
 namespace _4Module.Controllers
@@ -30,6 +36,7 @@ namespace _4Module.Controllers
         private readonly IAuthorHttpService _authorHttpService;
         private readonly IProductReviewService _productReview;
         private readonly IDistributedCache _cache;
+     
 
         public BookController(IBookService bookService, IAuthorService authorService, IAuthorReportService reportService
             , IProductReviewService productReview, IDistributedCache cache, IAuthorHttpService authorHttpService)
@@ -41,7 +48,9 @@ namespace _4Module.Controllers
             _productReview = productReview;
             _cache = cache;
             _authorHttpService = authorHttpService;
+           
         }
+
 
 
 
@@ -93,6 +102,19 @@ namespace _4Module.Controllers
         {
             var book = await _bookService.GetByIdAsync(id);
             if (book == null) { return NotFound(); }
+            var config = new ProducerConfig { BootstrapServers = "kafka:29092" };
+            using var producer = new ProducerBuilder<string, string>(config).Build();
+
+            var headers = new Headers();
+            var propagator = Propagators.DefaultTextMapPropagator;
+            propagator.Inject(new PropagationContext(Activity.Current?.Context ?? default, Baggage.Current), headers, (h, key, value) => h.Add(key, Encoding.UTF8.GetBytes(value)));
+
+            await producer.ProduceAsync("books-views", new Message<string, string>
+            {
+                Key = id.ToString(),
+                Value = $"Book viewed: {book.Title}",
+                Headers = headers
+            });
             return Ok(book);
         }
 
@@ -223,8 +245,8 @@ namespace _4Module.Controllers
         public async Task<ActionResult<IEnumerable<AuthorResponseDTO>>> GetAuthorsByIds([FromQuery] List<Guid> ids)
         {
 
-            var authors = await _authorService.GetByIdsAsync(ids);
-            return Ok(authors);
+            //var authors = await _authorService.GetByIdsAsync(ids);
+            return StatusCode(503);
         }
         [HttpGet("test-fallback")]
         public async Task<IActionResult> TestFallback([FromServices] IAuthorHttpService authorHttpService)
@@ -235,6 +257,15 @@ namespace _4Module.Controllers
             return Ok(authors);
 
 
+        }
+        [HttpGet("test-circuit-breaker")]
+        public async Task<IActionResult> TestCircuitBreaker()
+        {
+
+            
+                    
+            return  Ok(await _authorHttpService.GetByIdsAsync(new List<Guid> { Guid.NewGuid() }));
+             
         }
     }
 }

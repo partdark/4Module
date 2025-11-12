@@ -3,6 +3,7 @@ using Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using Polly.CircuitBreaker;
 
 namespace _4Module.Controllers
 {
@@ -52,10 +53,10 @@ namespace _4Module.Controllers
         public async Task<IActionResult> PublicGet()
         {
             var result =  await _bookRepository.PublicGet();
-
+          
             return Ok(result);
         }
+        
 
-       
     }
 }

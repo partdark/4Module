@@ -17,13 +17,16 @@ namespace Applications.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IAuthorHttpService _authorHttpService;
         private readonly IAnaliticsService _analiticsService;
+        private readonly System.Diagnostics.Metrics.Counter<int> _bookCounter;
 
-        public BookService(IBookRepository bookRepository, IAuthorHttpService authorHttpService, IHttpClientFactory httpClientFactory, IAnaliticsService analiticsService)
+        public BookService(IBookRepository bookRepository, IAuthorHttpService authorHttpService, 
+            IHttpClientFactory httpClientFactory, IAnaliticsService analiticsService, System.Diagnostics.Metrics.Counter<int> bookCounter)
         {
             _bookRepository = bookRepository;
             _authorHttpService = authorHttpService;
             _httpClientFactory = httpClientFactory;
             _analiticsService = analiticsService;
+            _bookCounter = bookCounter;
         }
 
 
@@ -74,6 +77,7 @@ namespace Applications.Services
 
             var created = await _bookRepository.CreateAsync(book);
             await _analiticsService.SendEventAsync("book-create", created.Id.ToString(), $"New book created: {created.Title.ToString()}");
+            _bookCounter.Add(1);
             return MapToDto(created);
         }
 

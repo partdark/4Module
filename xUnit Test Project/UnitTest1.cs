@@ -49,6 +49,7 @@ namespace xUnit_Test_Project
         private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
         private readonly IBookService _bookService;
         private readonly Mock<IAnaliticsService> _analyticsMock;
+        
 
         public BookReposotoryTest()
         {
@@ -56,7 +57,7 @@ namespace xUnit_Test_Project
             _authorMock = new Mock<IAuthorHttpService>();
             _httpClientFactoryMock = new Mock<IHttpClientFactory>();
             _analyticsMock = new Mock<IAnaliticsService>();
-            _bookService = new BookService(_bookMock.Object, _authorMock.Object, _httpClientFactoryMock.Object, _analyticsMock.Object);
+            _bookService = new BookService(_bookMock.Object, _authorMock.Object, _httpClientFactoryMock.Object, _analyticsMock.Object, null);
         }
 
 

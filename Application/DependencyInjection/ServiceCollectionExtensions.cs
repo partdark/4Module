@@ -8,13 +8,19 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Polly;
-using Polly.Extensions.Http;
+
 using Polly.Fallback;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Confluent.Kafka.Extensions.OpenTelemetry;
+
+using Polly.Retry;
+using Polly.CircuitBreaker;
+
+using Polly.Simmy;
 
 namespace Application.DependencyInjection
 {
@@ -32,25 +38,55 @@ namespace Application.DependencyInjection
             {
                 var config = new ProducerConfig
                 {
-
                     BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_BOOTSTRAP_SERVERS") ?? "localhost:9092"
-
                 };
-                return new ProducerBuilder<string, string>(config).Build();
+                return new ProducerBuilder<string, string>(config)
+                    .SetKeySerializer(Serializers.Utf8)
+                    .SetValueSerializer(Serializers.Utf8)
+                    .Build();
+            });
+            services.AddHttpClient("TestClient", client =>
+            {
+                client.BaseAddress = new Uri("https://petstore.swagger.io/");
             });
 
             services.AddHttpClient("TestClient", client =>
             {
                 client.BaseAddress = new Uri("https://petstore.swagger.io/");
             });
+
+            var httpClientBuilder = services.AddHttpClient<IAuthorHttpService, AuthorHttpService>(client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:7134/api/Book/");
+            });
+
+            httpClientBuilder.AddStandardResilienceHandler(options =>
+            {
+                options.Retry.MaxRetryAttempts = 3;
+                options.CircuitBreaker.FailureRatio = 0.5;
+                options.CircuitBreaker.MinimumThroughput = 5;
+                options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(2);
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+            });
+
+            services.AddHttpClient("TestClient", client =>
+            {
+                client.BaseAddress = new Uri("https://petstore.swagger.io/");
+            });
+
             services.AddHttpClient<IAuthorHttpService, AuthorHttpService>(client =>
             {
                 client.BaseAddress = new Uri("https://localhost:7134/api/Book/");
-            }).AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(3)))
-                .AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(3, _ => TimeSpan.FromSeconds(1)))
-            .AddPolicyHandler(HttpPolicyExtensions.HandleTransientHttpError()
-    .CircuitBreakerAsync(5, TimeSpan.FromSeconds(2)));
-
+            })
+            .AddStandardResilienceHandler(options =>
+            {
+                options.Retry.MaxRetryAttempts = 3;
+                options.CircuitBreaker.FailureRatio = 0.5;
+                options.CircuitBreaker.MinimumThroughput = 5;
+                options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(2);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(3);
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(10);
+            });
 
             return services;
         }
