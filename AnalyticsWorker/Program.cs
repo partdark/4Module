@@ -7,7 +7,6 @@ using Serilog.Sinks.Grafana.Loki;
 
 
 var builder = Host.CreateApplicationBuilder(args);
-
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .Enrich.WithProperty("Service", "analytics-worker")
