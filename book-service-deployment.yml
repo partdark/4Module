@@ -14,13 +14,27 @@ spec:
     spec:
       containers:
       - name: book-service
-        image: book-service:k8s
+        image: book-service:v8
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
         env:
         - name: ASPNETCORE_ENVIRONMENT
           value: Production
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka:9092"
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -28,8 +42,8 @@ spec:
               key: POSTGRES_PASSWORD
         volumeMounts:
         - name: config
-          mountPath: /app/appsettings.Production.json
-          subPath: appsettings.Production.json
+          mountPath: /app/appsettings
+          readOnly: true
       volumes:
       - name: config
         configMap:

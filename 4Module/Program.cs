@@ -33,6 +33,16 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+if (Directory.Exists("/app/appsettings"))
+{
+    var configPath = "/app/appsettings/appsettings.Production.json";
+    if (File.Exists(configPath))
+    {
+        builder.Configuration.AddJsonFile(configPath, optional: false, reloadOnChange: true);
+    }
+}
+
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .Enrich.WithProperty("Service", "book-service")
@@ -64,8 +74,8 @@ builder.Services.AddMassTransit(x =>
     x.UsingRabbitMq((context, cfg) =>
     {
         var rabbitHost = builder.Configuration["RabbitMQ:Host"] ?? "rabbitmq";
-        var rabbitUser = builder.Configuration["RabbitMQ:Username"] ?? "admin";
-        var rabbitPass = builder.Configuration["RabbitMQ:Password"] ?? "admin";
+        var rabbitUser = builder.Configuration["RabbitMQ:Username"] ?? "guest";
+        var rabbitPass = builder.Configuration["RabbitMQ:Password"] ?? "guest";
 
         cfg.Host(rabbitHost, 5672, "/", h =>
         {
@@ -237,7 +247,6 @@ builder.Services.AddOpenTelemetry().WithTracing(b => b
      .AddPrometheusExporter()
     );
 //builder.Services.AddHostedService<KafkaConsumerService>(); отдельный сервис
-
 
 
 

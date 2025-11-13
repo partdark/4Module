@@ -6,9 +6,10 @@ using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Sinks.Grafana.Loki;
 using System.Text;
+using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddHealthChecks();
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -45,7 +46,9 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "Admin"));
 });
 
-builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+//builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+builder.Services.AddSingleton<IProxyConfigProvider, KubernetesServiceDiscovery>();
+builder.Services.AddReverseProxy();
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService("gateway-book-service"))
@@ -66,10 +69,11 @@ builder.Services.AddOpenTelemetry()
 
 
 var app = builder.Build();
+app.MapHealthChecks("/healthz");
 app.UseRouting();
 
+app.MapReverseProxy();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapPrometheusScrapingEndpoint();
-app.MapReverseProxy();
 app.Run();
