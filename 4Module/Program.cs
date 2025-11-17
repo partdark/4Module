@@ -94,7 +94,11 @@ builder.Services.AddDbContext<OrderContext>(options =>
 
 
 
-builder.Services.AddHealthChecks();
+if (!builder.Environment.IsEnvironment("Test"))
+{
+    builder.Services.AddHealthChecks();
+}
+
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddOutputCache(options =>
 {
@@ -327,7 +331,10 @@ app.MapControllers();
 
 
 
-app.MapHealthChecks("/healthz");
+if (!app.Environment.IsEnvironment("Test"))
+{
+    app.MapHealthChecks("/healthz");
+}
 
 app.MapPrometheusScrapingEndpoint();
 

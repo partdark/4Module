@@ -10,7 +10,7 @@ namespace Infrastructure.Data
 {
     public class BookContext : IdentityDbContext<IdentityUser>
     {
-        public BookContext(DbContextOptions options) : base(options)
+        public BookContext(DbContextOptions<BookContext> options) : base(options)
         {
             
         }

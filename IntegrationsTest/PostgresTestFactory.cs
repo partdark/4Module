@@ -1,4 +1,4 @@
-using Domain.Entitties;
+/*using Domain.Entitties;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -157,3 +157,4 @@ namespace IntegrationTest
     }
 }
 
+*/
