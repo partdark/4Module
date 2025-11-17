@@ -1,17 +1,18 @@
 global:
-  scrape_interval: 15s
-  evaluation_interval: 15s
-
+  scrape_interval: 15s 
 scrape_configs:
-  - job_name: 'book-service'
-    static_configs:
-      - targets: ['book-service:8080']
-        labels:
-          service: 'book-service'
 
-  - job_name: 'gateway-service'
+  - job_name: 'prometheus'
     static_configs:
-      - targets: ['gateway-service:8080']
-        labels:
-          service: 'gateway-service'
+      - targets: ['localhost:9090']
+
+
+  - job_name: 'book-app-services'
+    metrics_path: /metrics 
+    static_configs:
+      - targets: 
+          - 'book-service:8080'
+          - 'grpc-book-service:8080'
+          - 'grpc-author-service:8080'
+          - 'gateway-service:8080'
 
