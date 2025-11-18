@@ -11,8 +11,7 @@ namespace Infrastructure.Data
     public class BookContext : IdentityDbContext<IdentityUser>
     {
         public BookContext(DbContextOptions<BookContext> options) : base(options)
-        {
-            
+        {         
         }
         public DbSet<Book> Books { get; set; }
         public DbSet<Author> Authors { get; set; }
